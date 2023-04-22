@@ -62,9 +62,6 @@ async function home(client: Client) {
   const name = 'myArm';
   const mc = new MotionClient(client, name);
 
-
-  
-
   let tableOrigin = new Pose()
 
   tableOrigin.setOX(0)
@@ -74,8 +71,6 @@ async function home(client: Client) {
   tableOrigin.setX(0)
   tableOrigin.setY(0)
   tableOrigin.setZ(0)
-
-
 
   let table_dims = new Vector3()
   table_dims.setX(2000)
@@ -93,7 +88,6 @@ async function home(client: Client) {
   let myObstaclesInFrame = new GeometriesInFrame()
   let myCooolArray : Geometry[] = []
   myCooolArray.push(table_object)
-
 
   myObstaclesInFrame.setReferenceFrame("world")
   myObstaclesInFrame.setGeometriesList(myCooolArray)
@@ -113,27 +107,21 @@ async function home(client: Client) {
   home_pose.setOZ(1)
   home_pose.setTheta(0)
 
-
   let home_pose_in_frame = new PoseInFrame()
   home_pose_in_frame.setReferenceFrame("world")
   home_pose_in_frame.setPose(home_pose)
 
-  home_pose_in_frame
-  
-
   try {
     homebutton().disabled = true;
 
-    // console.log(await mc.getPose('gripper', ));
     console.log('home position?');
-     
-    //await mc.move(home_pose);
+   
 
     let myResourceName = new ResourceName()
     myResourceName.setName('myArm')
 
     await mc.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
-    
+  
    
   } finally {
     homebutton().disabled = false;
