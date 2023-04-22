@@ -1,5 +1,6 @@
-import { Client, BoardClient, MotionClient, createRobotClient, commonApi} from '@viamrobotics/sdk';
-import { Geometry, Pose, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
+import { Client, BoardClient, MotionClient, createRobotClient} from '@viamrobotics/sdk';
+import { GeometriesInFrame, Geometry, Pose, PoseInFrame, RectangularPrism, ResourceName, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
+import { Constraints, OrientationConstraint } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb';
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
@@ -48,26 +49,32 @@ function delay(time) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
+var constraints = new Constraints()
+let theOrientConstraint = new OrientationConstraint()
+
+let myVerySuperCoolAwesomeOrientationConstraintArrayThatHasOnlyOneThing: OrientationConstraint[] = [theOrientConstraint]
+constraints.setOrientationConstraintList(myVerySuperCoolAwesomeOrientationConstraintArrayThatHasOnlyOneThing)
+
+
 
 async function home(client: Client) {
   //When you create a new client, list your component name here.
   const name = 'myArm';
   const mc = new MotionClient(client, name);
-  let myWorldState = new WorldState();
 
-  // type tableOrigin = Pose;
 
-  // let tableOrigin = {
-  //   oX: 0,
-  //   oY: 0,
-  //   oZ: 1,
-  //   theta: 105,
-  //   x: 0,
-  //   y: 0,
-  //   z: 0
-  // }
+  
 
   let tableOrigin = new Pose()
+
+  tableOrigin.setOX(0)
+  tableOrigin.setOY(0)
+  tableOrigin.setOZ(1)
+  tableOrigin.setTheta(105)
+  tableOrigin.setX(0)
+  tableOrigin.setY(0)
+  tableOrigin.setZ(0)
+
 
 
   let table_dims = new Vector3()
@@ -77,30 +84,55 @@ async function home(client: Client) {
 
   let table_object = new Geometry()
 
+  let myRectangularPrism = new RectangularPrism()
+  myRectangularPrism.setDimsMm(table_dims)
+
   table_object.setCenter(tableOrigin)
+  table_object.setBox(myRectangularPrism)
+
+  let myObstaclesInFrame = new GeometriesInFrame()
+  let myCooolArray : Geometry[] = []
+  myCooolArray.push(table_object)
 
 
-  //home pos?
-  type home_pose = Pose;
+  myObstaclesInFrame.setReferenceFrame("world")
+  myObstaclesInFrame.setGeometriesList(myCooolArray)
 
-  let home_pose = {
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-    theta: 0,
-    x: 390.0,
-    y: 105.0,
-    z: 600
-  }
+  let myWorldState = new WorldState();
+
+  myWorldState.addObstacles(myObstaclesInFrame)
+
+
+  let home_pose = new Pose()
+
+  home_pose.setX(390)
+  home_pose.setY(105)
+  home_pose.setZ(600)
+  home_pose.setOX(0)
+  home_pose.setOY(0)
+  home_pose.setOZ(1)
+  home_pose.setTheta(0)
+
+
+  let home_pose_in_frame = new PoseInFrame()
+  home_pose_in_frame.setReferenceFrame("world")
+  home_pose_in_frame.setPose(home_pose)
+
+  home_pose_in_frame
   
 
   try {
     homebutton().disabled = true;
 
-    console.log(await mc.getPose('gripper', ));
+    // console.log(await mc.getPose('gripper', ));
     console.log('home position?');
      
     //await mc.move(home_pose);
+
+    let myResourceName = new ResourceName()
+    myResourceName.setName('myArm')
+
+    await mc.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
     
    
   } finally {
