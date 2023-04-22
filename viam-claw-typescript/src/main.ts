@@ -1,4 +1,5 @@
-import { Client, BoardClient, createRobotClient } from '@viamrobotics/sdk';
+import { Client, BoardClient, MotionClient, createRobotClient, commonApi} from '@viamrobotics/sdk';
+import { Geometry, Pose, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
@@ -38,11 +39,74 @@ function releasebutton() {
   return <HTMLButtonElement>document.getElementById('release-button');
 }
 
+function homebutton() {
+  return <HTMLButtonElement>document.getElementById('home-button');
+}
+
 //Creating a delay function for timing 
 function delay(time) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
+
+async function home(client: Client) {
+  //When you create a new client, list your component name here.
+  const name = 'myArm';
+  const mc = new MotionClient(client, name);
+  let myWorldState = new WorldState();
+
+  // type tableOrigin = Pose;
+
+  // let tableOrigin = {
+  //   oX: 0,
+  //   oY: 0,
+  //   oZ: 1,
+  //   theta: 105,
+  //   x: 0,
+  //   y: 0,
+  //   z: 0
+  // }
+
+  let tableOrigin = new Pose()
+
+
+  let table_dims = new Vector3()
+  table_dims.setX(2000)
+  table_dims.setY(2000)
+  table_dims.setZ(30)
+
+  let table_object = new Geometry()
+
+  table_object.setCenter(tableOrigin)
+
+
+  //home pos?
+  type home_pose = Pose;
+
+  let home_pose = {
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+    theta: 0,
+    x: 390.0,
+    y: 105.0,
+    z: 600
+  }
+  
+
+  try {
+    homebutton().disabled = true;
+
+    console.log(await mc.getPose('gripper', ));
+    console.log('home position?');
+     
+    //await mc.move(home_pose);
+    
+   
+  } finally {
+    homebutton().disabled = false;
+  }
+}
 
 async function grab(client: Client) {
   //When you create a new client, list your component name here.
@@ -98,12 +162,18 @@ async function main() {
 
   };
 
+  homebutton().onclick = async () => {
+    await home(client);
+
+  };
+
   releasebutton().onclick = async () => {
     await release(client);
   }
 
   grabbutton().disabled = false;
   releasebutton().disabled = false;
+  homebutton().disabled = false;
 }
 
 main();
