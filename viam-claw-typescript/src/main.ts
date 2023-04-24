@@ -1,6 +1,8 @@
 import { Client, BoardClient, MotionClient, createRobotClient} from '@viamrobotics/sdk';
+import { Transform } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
 import { GeometriesInFrame, Geometry, Pose, PoseInFrame, RectangularPrism, ResourceName, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
 import { Constraints, OrientationConstraint } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb';
+import { MotionService } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb_service';
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
@@ -52,9 +54,8 @@ function delay(time) {
 var constraints = new Constraints()
 let theOrientConstraint = new OrientationConstraint()
 
-let myVerySuperCoolAwesomeOrientationConstraintArrayThatHasOnlyOneThing: OrientationConstraint[] = [theOrientConstraint]
-constraints.setOrientationConstraintList(myVerySuperCoolAwesomeOrientationConstraintArrayThatHasOnlyOneThing)
-
+let orientationConstraintArray: OrientationConstraint[] = [theOrientConstraint]
+constraints.setOrientationConstraintList(orientationConstraintArray)
 
 
 async function home(client: Client) {
@@ -62,6 +63,8 @@ async function home(client: Client) {
   const name = 'myArm';
   const mc = new MotionClient(client, name);
 
+
+  //Add table/floor obstacle to the Worldstate 
   let tableOrigin = new Pose()
 
   tableOrigin.setOX(0)
@@ -85,17 +88,21 @@ async function home(client: Client) {
   table_object.setCenter(tableOrigin)
   table_object.setBox(myRectangularPrism)
 
+  //Create a Worldstate that has the GeometriesInFrame included 
+
   let myObstaclesInFrame = new GeometriesInFrame()
-  let myCooolArray : Geometry[] = []
-  myCooolArray.push(table_object)
+  let myHomeArray : Geometry[] = []
+  myHomeArray.push(table_object)
 
   myObstaclesInFrame.setReferenceFrame("world")
-  myObstaclesInFrame.setGeometriesList(myCooolArray)
+  myObstaclesInFrame.setGeometriesList(myHomeArray)
 
   let myWorldState = new WorldState();
 
   myWorldState.addObstacles(myObstaclesInFrame)
 
+  //Generate a sample "home" position around the drop hole to demonstrate 
+  //where the ball should be dropped 
 
   let home_pose = new Pose()
 
@@ -126,6 +133,77 @@ async function home(client: Client) {
   } finally {
     homebutton().disabled = false;
   }
+}
+
+async function forward(client: Client) {
+  //When you create a new client, list your component name here.
+  const name = 'myArm';
+  const mc = new MotionClient(client, name);
+  
+  //Add a front wall obstacle to the WorldState
+  let frontWallOrigin = new Pose()
+
+  frontWallOrigin.setOX(0)
+  frontWallOrigin.setOY(0)
+  frontWallOrigin.setOZ(1)
+  frontWallOrigin.setTheta(15)
+  frontWallOrigin.setX(560)
+  frontWallOrigin.setY(0)
+  frontWallOrigin.setZ(0)
+
+  let frontWalldims = new Vector3()
+  frontWalldims.setX(15)
+  frontWalldims.setY(2000)
+  frontWalldims.setZ(1000)
+
+  let frontWallObject = new Geometry()
+
+  let myRectangularPrism = new RectangularPrism()
+  myRectangularPrism.setDimsMm(frontWalldims)
+
+  frontWallObject.setCenter(frontWallOrigin)
+  frontWallObject.setBox(myRectangularPrism)
+
+  let myObstaclesInFrame = new GeometriesInFrame()
+  let tableObjectArray : Geometry[] = []
+  tableObjectArray.push(frontWallObject)
+
+  //Create a WorldState that has Geometries in Frame included 
+
+  myObstaclesInFrame.setReferenceFrame("world")
+  myObstaclesInFrame.setGeometriesList(tableObjectArray)
+
+  let myWorldState = new WorldState();
+
+  myWorldState.addObstacles(myObstaclesInFrame)
+
+  //Get current position of the arm 
+
+  let myResourceName = new ResourceName()
+  myResourceName.setName('myArm')
+
+
+  //Get current position of the arm 
+ 
+  let currentPosition = await mc.getPose(myResourceName.toObject(), 'world', Transform.toObject[""])
+  console.log('current position:' + currentPosition);
+
+  //Move x position forward by 50 units *this part is wrong keep working on it 
+  let forwardPose = new Pose()
+
+  forwardPose.setX(50)
+  forwardPose.setY(105)
+  forwardPose.setZ(600)
+  forwardPose.setOX(0)
+  forwardPose.setOY(0)
+  forwardPose.setOZ(1)
+  forwardPose.setTheta(0)
+
+  let forwardpose_in_frame = new PoseInFrame()
+  forwardpose_in_frame.setReferenceFrame("world")
+  forwardpose_in_frame.setPose(forwardPose)
+
+
 }
 
 async function grab(client: Client) {
