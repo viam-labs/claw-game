@@ -120,7 +120,7 @@ async function home(client: Client) {
     let myResourceName = new ResourceName()
     myResourceName.setName('myArm')
 
-    await mc.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
+    await mc.move(home_pose_in_frame.toObject(), myResourceName.toObject(), myWorldState.toObject(), constraints.toObject())
   
    
   } finally {
