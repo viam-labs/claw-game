@@ -1,8 +1,8 @@
 import { Client, BoardClient, MotionClient, createRobotClient} from '@viamrobotics/sdk';
-import { Transform } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
-import { GeometriesInFrame, Geometry, Pose, PoseInFrame, RectangularPrism, ResourceName, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
-import { Constraints, OrientationConstraint } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb';
-import { MotionService } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb_service';
+// import { Transform } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
+// import { GeometriesInFrame, Geometry, Pose, PoseInFrame, RectangularPrism, ResourceName, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
+// import { Constraints, OrientationConstraint } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb';
+// import { MotionService } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb_service';
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
