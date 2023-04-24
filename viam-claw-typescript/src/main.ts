@@ -1,4 +1,5 @@
-import { Client, BoardClient, MotionClient, createRobotClient} from '@viamrobotics/sdk';
+import { Client, BoardClient, MotionClient, createRobotClient } from '@viamrobotics/sdk';
+import type { MotionConstraints, Pose, Vector3D,  } from '@viamrobotics/sdk';
 // import { Transform } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
 // import { GeometriesInFrame, Geometry, Pose, PoseInFrame, RectangularPrism, ResourceName, Vector3, WorldState } from '@viamrobotics/sdk/dist/gen/common/v1/common_pb';
 // import { Constraints, OrientationConstraint } from '@viamrobotics/sdk/dist/gen/service/motion/v1/motion_pb';
@@ -51,12 +52,13 @@ function delay(time) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
-var constraints = new Constraints()
-let theOrientConstraint = new OrientationConstraint()
-
-let orientationConstraintArray: OrientationConstraint[] = [theOrientConstraint]
-constraints.setOrientationConstraintList(orientationConstraintArray)
-
+var constraints: MotionConstraints = {
+  orientationConstraintList: [
+    {orientationToleranceDegs: 5},
+  ],
+  linearConstraintList: [],
+  collisionSpecificationList: [],
+};
 
 async function home(client: Client) {
   //When you create a new client, list your component name here.
@@ -65,20 +67,21 @@ async function home(client: Client) {
 
 
   //Add table/floor obstacle to the Worldstate 
-  let tableOrigin = new Pose()
+  let tableOrigin: Pose = {
+    x: 0,
+    y: 0,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  };
 
-  tableOrigin.setOX(0)
-  tableOrigin.setOY(0)
-  tableOrigin.setOZ(1)
-  tableOrigin.setTheta(105)
-  tableOrigin.setX(0)
-  tableOrigin.setY(0)
-  tableOrigin.setZ(0)
-
-  let table_dims = new Vector3()
-  table_dims.setX(2000)
-  table_dims.setY(2000)
-  table_dims.setZ(30)
+  let table_dims: Vector3D = {
+    x: 2000,
+    y: 2000,
+    z: 30,
+  };
 
   let table_object = new Geometry()
 
@@ -104,15 +107,17 @@ async function home(client: Client) {
   //Generate a sample "home" position around the drop hole to demonstrate 
   //where the ball should be dropped 
 
-  let home_pose = new Pose()
+  let home_pose: Pose = {
+    x: 390,
+    y: 105,
+    z: 600,
+    theta: 0,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  };
 
-  home_pose.setX(390)
-  home_pose.setY(105)
-  home_pose.setZ(600)
-  home_pose.setOX(0)
-  home_pose.setOY(0)
-  home_pose.setOZ(1)
-  home_pose.setTheta(0)
+  
 
   let home_pose_in_frame = new PoseInFrame()
   home_pose_in_frame.setReferenceFrame("world")
@@ -141,20 +146,21 @@ async function forward(client: Client) {
   const mc = new MotionClient(client, name);
   
   //Add a front wall obstacle to the WorldState
-  let frontWallOrigin = new Pose()
+  let frontWallOrigin: Pose = {
+    x: 560,
+    y: 0,
+    z: 0,
+    theta: 15,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  };
 
-  frontWallOrigin.setOX(0)
-  frontWallOrigin.setOY(0)
-  frontWallOrigin.setOZ(1)
-  frontWallOrigin.setTheta(15)
-  frontWallOrigin.setX(560)
-  frontWallOrigin.setY(0)
-  frontWallOrigin.setZ(0)
-
-  let frontWalldims = new Vector3()
-  frontWalldims.setX(15)
-  frontWalldims.setY(2000)
-  frontWalldims.setZ(1000)
+  let frontWalldims: Vector3D = {
+    x: 15,
+    y: 2000,
+    z: 1000,
+  };
 
   let frontWallObject = new Geometry()
 
@@ -189,15 +195,15 @@ async function forward(client: Client) {
   console.log('current position:' + currentPosition);
 
   //Move x position forward by 50 units *this part is wrong keep working on it 
-  let forwardPose = new Pose()
-
-  forwardPose.setX(50)
-  forwardPose.setY(105)
-  forwardPose.setZ(600)
-  forwardPose.setOX(0)
-  forwardPose.setOY(0)
-  forwardPose.setOZ(1)
-  forwardPose.setTheta(0)
+  let forwardPose: Pose = {
+    x: 50,
+    y: 105,
+    z: 600,
+    theta: 0,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  };
 
   let forwardpose_in_frame = new PoseInFrame()
   forwardpose_in_frame.setReferenceFrame("world")
