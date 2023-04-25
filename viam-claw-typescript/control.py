@@ -305,6 +305,7 @@ async def main():
     # my Subpart name, arm
     my_arm_resource= Arm.get_resource_name("planning:myArm")
     my_arm_resource.name= "myArm"
+    print("arm resource", my_arm_resource)
         
     commands = [args.command]
     if args.command == "sequence":
