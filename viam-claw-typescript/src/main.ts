@@ -64,6 +64,10 @@ function dropbutton() {
   return <HTMLButtonElement>document.getElementById('drop-button');
 }
 
+function upbutton() {
+  return <HTMLButtonElement>document.getElementById('up-button');
+}
+
 
 //Creating a delay function for timing 
 function delay(time) {
@@ -534,7 +538,7 @@ async function dropDown(client: Client) {
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 280,
+    z: 330,
     theta: currentPosition.pose!.theta,
     oX: currentPosition.pose!.oX,
     oY: currentPosition.pose!.oY, 
@@ -546,8 +550,90 @@ async function dropDown(client: Client) {
     pose: dropPose
   }
 
-  //Move x position forward by 50 units 
+  //Drop the claw down
+  console.log('im about to drop')
   await mc.move(droppose_in_frame, myResourceName, myWorldState, constraints)
+  console.log('dropped')
+
+}
+
+async function up(client: Client) {
+  //When you create a new client, list your component name here.
+  const name = 'planning:builtin';
+  const mc = new MotionClient(client, name);
+  
+  //Add a back wall obstacle to the WorldState
+
+  let uporigin: SDK.Pose = {
+    x: 0,
+    y: 0,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+  };
+
+  let updims: SDK.Vector3 = {
+    x: 2000, 
+    y: 2000, 
+    z: 30
+  }
+
+  let upRectangularPrism: SDK.RectangularPrism ={
+    dimsMm: updims
+  }
+
+  let upWallObject: SDK.Geometry ={
+    center: uporigin, 
+    box: upRectangularPrism,
+    label: '',
+  }
+
+  //Create a WorldState that has Geometries in Frame included 
+
+  let myObstaclesInFrame: SDK.GeometriesInFrame = {
+    referenceFrame: "world", 
+    geometriesList: [upWallObject],
+  }
+  
+  let myWorldState: SDK.WorldState ={
+    obstaclesList: [myObstaclesInFrame],
+    transformsList: [],
+  }
+
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
+  }
+
+  //Get current position of the arm 
+  console.log('im trying to print the current position')
+  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  console.log('current position:' + JSON.stringify(currentPosition))
+
+  
+  let upPose: Pose = {
+    x: currentPosition.pose!.x,
+    y: currentPosition.pose!.y,
+    z: 600,
+    theta: currentPosition.pose!.theta,
+    oX: currentPosition.pose!.oX,
+    oY: currentPosition.pose!.oY, 
+    oZ: currentPosition.pose!.oZ
+  };
+
+  let uppose_in_frame: SDK.PoseInFrame ={
+    referenceFrame: "world", 
+    pose: upPose
+  }
+
+  //Pick the claw up 
+  console.log('let`s go up')
+  await mc.move(uppose_in_frame, myResourceName, myWorldState, constraints)
+  console.log('up!')
 
 }
 
@@ -638,6 +724,10 @@ async function main() {
     await dropDown(client);
   }
 
+  upbutton().onclick = async () => {
+    await up(client);
+  }
+
   grabbutton().disabled = false;
   releasebutton().disabled = false;
   homebutton().disabled = false;
@@ -646,6 +736,7 @@ async function main() {
   rightbutton().disabled = false;
   leftbutton().disabled = false;
   dropbutton().disabled = false;
+  upbutton().disabled = false;
 }
 
 main();
