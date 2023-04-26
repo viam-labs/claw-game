@@ -721,7 +721,12 @@ async function main() {
   };
 
   dropbutton().onclick = async () => {
-    await dropDown(client);
+    await dropDown(client)
+    await grab(client)
+    await delay(2000);
+    await up(client)
+    await home(client)
+    await release(client)
   }
 
   upbutton().onclick = async () => {
