@@ -487,13 +487,13 @@ async function dropDown(client: Client) {
     theta: 105,
     oX: 0,
     oY: 0,
-    oZ: -1,
+    oZ: 1,
   };
 
   let dropdims: SDK.Vector3 = {
-    x: 15, 
+    x: 2000, 
     y: 2000, 
-    z: 1000
+    z: 30
   }
 
   let dropRectangularPrism: SDK.RectangularPrism ={
