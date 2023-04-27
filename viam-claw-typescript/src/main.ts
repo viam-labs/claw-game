@@ -594,7 +594,7 @@ async function dropDown(client: Client) {
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 250,
+    z: 230,
     theta: currentPosition.pose!.theta,
     oX: currentPosition.pose!.oX,
     oY: currentPosition.pose!.oY, 
