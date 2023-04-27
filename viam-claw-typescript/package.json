@@ -3,15 +3,19 @@
   "version": "0.0.1",
   "description": "Viam SDK Quickstart",
   "scripts": {
-    "start": "esbuild ./src/main.ts --bundle --outfile=static/main.js --servedir=static",
+    "build:css": "tailwindcss build src/tailwind.css -o public/build/tailwind.css",
+    "start": "npm run build:css && esbuild ./src/main.ts --bundle --outfile=static/main.js --servedir=static",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "esbuild": "0.16.12"
+    "esbuild": "^0.16.12"
   },
   "dependencies": {
-    "@viamrobotics/sdk": "^0.0.47"
+    "@viamrobotics/sdk": "^0.0.47",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.3.2"
   }
 }

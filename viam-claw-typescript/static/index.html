@@ -3,41 +3,60 @@
   <head>
     <title>THE CLAW</title>
     <link rel="icon" href="favicon.ico" />
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="./src/tailwind.css"> -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
   </head>
-  <body>
+  <body class="bg-pink-200 flex justify-center items-center min-h-screen">
     <div id="main">
-      <!-- <button id="grab-button" disabled=true>
-        grab
-      </button>
-      <button id="release-button" disabled=true>
-        release
-      </button> -->
-    </div>
-    <div id ="arm-controls">
-      <!--<button id="home-button" disabled=true>
-        home 
-      </button> -->
-      <button id="drop-button" disabled = true>
-        drop 
-      </button>
-      <!--<button id ="up-button" disabled = true>
-        up
-      </button> -->
-    </div>
-    <div id ="directional-controls">
-      <button id="forward-button" disabled="true">
-        forward 
-      </button>
-      <button id="back-button" disabled ="true">
-        back 
-      </button>
-      <button id="left-button" disabled = "true">
-        left 
-      </button>
-      <button id="right-button" disabled = "true">
-        right 
-      </button>
+      <div id="controls">
+        <!-- <div id="arm-controls">
+          <button id="drop-button" disabled>
+            drop
+          </button>
+        </div> -->
+        <div id="directional-controls" class="border-2 border-red-500 w-48 flex flex-col items-center justify-center">
+          <div id="button-row-one" class="w-full flex items-center justify-center">
+            <button id="forward-button" class="w-16 h-16 flex items-center justify-center hover:bg-pink-300">
+              ^
+            </button>
+          </div>
+          <div id="button-row-two" class="w-full flex items-center justify-center">
+            <button id="left-button" class="w-16 h-16 flex items-center justify-center hover:bg-pink-300">
+              <
+            </button>
+            <button id="drop-button" class="w-16 h-16 flex items-center justify-center hover:bg-pink-300">
+              drop
+            </button>
+            <button id="right-button" class="w-16 h-16 flex items-center justify-center hover:bg-pink-300">
+              >
+            </button>
+          </div>
+          <div id="button-row-three" class="w-full flex items-center justify-center">
+            <button id="back-button" class="w-16 h-16 flex items-center justify-center hover:bg-pink-300">
+              v
+            </button>
+          </div>
+
+          <!-- <div id="up">
+            <button id="forward-button" disabled>
+              ^
+            </button>
+          </div>
+          <div id="middle-row">
+            <button id="left-button" disabled>
+              <
+            </button>
+            <button id="right-button" disabled>
+              >
+            </button>
+          </div>
+          <div id="down">
+            <button id="back-button" disabled>
+              v
+            </button>
+          </div> -->
+        </div>
+      </div>
     </div>
     <script type="module" src="main.js">
     </script>
