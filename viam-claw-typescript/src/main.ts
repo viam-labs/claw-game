@@ -771,6 +771,29 @@ async function main() {
 
   };
 
+  // async function rightLoop(client: Client, event) {
+  //   // event.preventDefault();
+  //   let stop: boolean = false;
+  //   let mouseUp = async () => {
+  //     stop = true
+  //   };
+  //   rightbutton().addEventListener("onmouseup", mouseUp);
+  //   let i = 0;
+  //   while (!stop) {
+  //     await right(client);
+  //     await delay(20);
+  //     i++;
+  //     if (i > 12) {
+  //       break
+  //     }
+  //   }
+  //   rightbutton().removeEventListener("onmouseup", mouseUp);
+  // }
+
+  rightbutton().onmousedown = async (event) => {
+    await right(client);
+  }
+
   leftbutton().onclick = async () => {
     await left(client);
 
