@@ -1,4 +1,5 @@
-import { Client, BoardClient, MotionClient, createRobotClient } from '@viamrobotics/sdk';
+
+import { Client, BoardClient, MotionClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
 
@@ -20,7 +21,6 @@ async function connect() {
 
   const iceServers = [{ urls: 'stun:global.stun.twilio.com:3478' }];
 
-
   return createRobotClient({
     host,
     credential,
@@ -32,20 +32,21 @@ async function connect() {
 
 
 //Functions calling the grab and release actions of the claw 
-function grabbutton() {
-  return <HTMLButtonElement>document.getElementById('grab-button');
-}
+// function grabbutton() {
+//   return <HTMLButtonElement>document.getElementById('grab-button');
+// }
 
-function releasebutton() {
-  return <HTMLButtonElement>document.getElementById('release-button');
-}
+// function releasebutton() {
+//   return <HTMLButtonElement>document.getElementById('release-button');
+// }
 
-function homebutton() {
-  return <HTMLButtonElement>document.getElementById('home-button');
-}
+// function homebutton() {
+//   return <HTMLButtonElement>document.getElementById('home-button');
+// }
 
 function forwardbutton() {
   return <HTMLButtonElement>document.getElementById('forward-button');
+
 }
 
 function backbutton() {
@@ -64,9 +65,9 @@ function dropbutton() {
   return <HTMLButtonElement>document.getElementById('drop-button');
 }
 
-function upbutton() {
-  return <HTMLButtonElement>document.getElementById('up-button');
-}
+// function upbutton() {
+//   return <HTMLButtonElement>document.getElementById('up-button');
+// }
 
 
 //Creating a delay function for timing 
@@ -90,6 +91,34 @@ async function home(client: Client) {
   // const mc = new MotionClient(client, name, {requestLogger: (req) => { console.log(req); } });
   const mc = new MotionClient(client, name)
 
+  
+  //Add the hole obstacles to the Worldstate
+  let holeOrigin: SDK.Pose = {
+    x: 470, 
+    y: 120, 
+    z: 0, 
+    oX: 0, 
+    oY: 0, 
+    oZ: 1, 
+    theta: 15
+  }
+
+  let holedims: SDK.Vector3 ={
+    x: 250, 
+    y: 400, 
+    z: 300
+  }
+
+  let myHoleRectangularPrism: SDK.RectangularPrism ={
+    dimsMm: holedims
+  }
+
+  let holeObject: SDK.Geometry ={
+    center: holeOrigin, 
+    box: myHoleRectangularPrism, 
+    label: ""
+  }
+
   //Add table/floor obstacle to the Worldstate 
   let tableOrigin: SDK.Pose = {
     x: 0,
@@ -98,7 +127,7 @@ async function home(client: Client) {
     theta: 105,
     oX: 0,
     oY: 0,
-    oZ: 1,
+    oZ: 1
   };
 
 
@@ -122,7 +151,7 @@ async function home(client: Client) {
 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [table_object],
+    geometriesList: [table_object, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -149,11 +178,11 @@ async function home(client: Client) {
   }
 
   try {
-    homebutton().disabled = true;
+    //homebutton().disabled = true;
    
-    console.log(await client.resourceNames())
-    console.log('this is the framesys below')
-    console.log(await client.frameSystemConfig(SDK.commonApi.Transform['']))
+    //console.log(await client.resourceNames())
+    //console.log('this is the framesys below')
+    //console.log(await client.frameSystemConfig(SDK.commonApi.Transform['']))
    
     let myResourceName: ResourceName = {
       namespace: 'rdk', 
@@ -167,7 +196,7 @@ async function home(client: Client) {
 
    
   } finally {
-    homebutton().disabled = false;
+    //homebutton().disabled = false;
   }
 }
 
@@ -510,11 +539,38 @@ async function dropDown(client: Client) {
     label: '',
   }
 
+  //create hole obstacles 
+  let holeOrigin: SDK.Pose = {
+    x: 470, 
+    y: 125, 
+    z: 0, 
+    oX: 0, 
+    oY: 0, 
+    oZ: 1, 
+    theta: 15
+  }
+
+  let holedims: SDK.Vector3 ={
+    x: 250, 
+    y: 400, 
+    z: 300
+  }
+
+  let myHoleRectangularPrism: SDK.RectangularPrism ={
+    dimsMm: holedims
+  }
+
+  let holeObject: SDK.Geometry ={
+    center: holeOrigin, 
+    box: myHoleRectangularPrism, 
+    label: ""
+  }
+
   //Create a WorldState that has Geometries in Frame included 
 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [dropWallObject],
+    geometriesList: [dropWallObject, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -538,7 +594,7 @@ async function dropDown(client: Client) {
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 330,
+    z: 250,
     theta: currentPosition.pose!.theta,
     oX: currentPosition.pose!.oX,
     oY: currentPosition.pose!.oY, 
@@ -643,7 +699,7 @@ async function grab(client: Client) {
   const bc = new BoardClient(client, name);
 
   try {
-    grabbutton().disabled = true;
+    //grabbutton().disabled = true;
 
     console.log(await bc.getGPIO('8'));
     console.log('i`m grabbin');
@@ -651,7 +707,7 @@ async function grab(client: Client) {
     
    
   } finally {
-    grabbutton().disabled = false;
+    //grabbutton().disabled = false;
   }
 }
 
@@ -661,7 +717,7 @@ async function release(client: Client) {
   const bc = new BoardClient(client, name);
 
   try {
-    grabbutton().disabled = true;
+   // grabbutton().disabled = true;
 
     console.log(await bc.getGPIO('8'));
     await bc.setGPIO('8', false);
@@ -670,7 +726,7 @@ async function release(client: Client) {
     
    
   } finally {
-    grabbutton().disabled = false;
+    //grabbutton().disabled = false;
   }
 }
 
@@ -686,27 +742,27 @@ async function main() {
   }
 
   // Make the buttons in your webapp do something interesting :)
-  grabbutton().onclick = async () => {
-    await grab(client);
+  // grabbutton().onclick = async () => {
+  //   await grab(client);
 
-  };
+  // };
 
-  releasebutton().onclick = async () => {
-    await release(client);
-  }
+  // releasebutton().onclick = async () => {
+  //   await release(client);
+  // }
 
-  homebutton().onclick = async () => {
-    await home(client);
+  // homebutton().onclick = async () => {
+  //   await home(client);
 
-  };
+  // };
 
   forwardbutton().onclick = async () => {
-    await forward(client);
+    await back(client);
 
   };
 
   backbutton().onclick = async () => {
-    await back(client);
+    await forward(client);
 
   };
 
@@ -723,25 +779,26 @@ async function main() {
   dropbutton().onclick = async () => {
     await dropDown(client)
     await grab(client)
-    await delay(2000);
+    await delay(3000);
     await up(client)
     await home(client)
+    await delay(1000);
     await release(client)
   }
 
-  upbutton().onclick = async () => {
-    await up(client);
-  }
+  // upbutton().onclick = async () => {
+  //   await up(client);
+  // }
 
-  grabbutton().disabled = false;
-  releasebutton().disabled = false;
-  homebutton().disabled = false;
+  // grabbutton().disabled = false;
+  // releasebutton().disabled = false;
+  // homebutton().disabled = false;
   forwardbutton().disabled = false;
   backbutton().disabled = false;
   rightbutton().disabled = false;
   leftbutton().disabled = false;
   dropbutton().disabled = false;
-  upbutton().disabled = false;
+  // upbutton().disabled = false;
 }
 
 main();
