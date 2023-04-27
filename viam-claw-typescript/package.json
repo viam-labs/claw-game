@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Viam SDK Quickstart",
   "scripts": {
-    "build:css": "tailwindcss build src/tailwind.css -o public/build/tailwind.css",
-    "start": "npm run build:css && esbuild ./src/main.ts --bundle --outfile=static/main.js --servedir=static",
+    "start": "esbuild ./src/main.ts --bundle --outfile=static/main.js --servedir=static",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
