@@ -756,19 +756,44 @@ async function main() {
 
   // };
 
-  forwardbutton().onclick = async () => {
-    await back(client);
+  // Add this function at the top of your main.ts file
+  function applyErrorClass(element: HTMLElement) {
+    element.classList.add("error");
+  }
 
+  // Update the onclick handlers in the main function:
+
+  forwardbutton().onclick = async () => {
+    if (forwardbutton().classList.contains('error')) return;
+    try {
+      await back(client);
+    } catch (error) {
+      console.log(error);
+      forwardbutton().classList.add('error');
+      forwardbutton()?.querySelector('svg')?.classList.add('icon');
+    }
   };
 
   backbutton().onclick = async () => {
-    await forward(client);
-
+    if (backbutton().classList.contains('error')) return;
+    try {
+      await forward(client);
+    } catch (error) {
+      console.log(error);
+      backbutton().classList.add('error');
+      backbutton()?.querySelector('svg')?.classList.add('icon');
+    }
   };
 
   rightbutton().onclick = async () => {
-    await right(client);
-
+    if (rightbutton().classList.contains('error')) return;
+    try {
+      await right(client);
+    } catch (error) {
+      console.log(error);
+      rightbutton().classList.add('error');
+      rightbutton()?.querySelector('svg')?.classList.add('icon');
+    }
   };
 
   // async function rightLoop(client: Client, event) {
@@ -795,19 +820,32 @@ async function main() {
   }
 
   leftbutton().onclick = async () => {
-    await left(client);
-
+    if (leftbutton().classList.contains('error')) return;
+    try {
+      await left(client);
+    } catch (error) {
+      console.log(error);
+      leftbutton().classList.add('error');
+      leftbutton()?.querySelector('svg')?.classList.add('icon');
+    }
   };
 
   dropbutton().onclick = async () => {
-    await dropDown(client)
-    await grab(client)
-    await delay(3000);
-    await up(client)
-    await home(client)
-    await delay(1000);
-    await release(client)
+    if (dropbutton().classList.contains('error')) return;
+    try {
+      await dropDown(client);
+      await grab(client);
+      await delay(3000);
+      await up(client);
+      await home(client);
+      await delay(1000);
+      await release(client);
+    } catch (error) {
+      console.log(error);
+      dropbutton().classList.add('error');
+    }
   }
+
 
   // upbutton().onclick = async () => {
   //   await up(client);
