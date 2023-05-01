@@ -1,12 +1,16 @@
 import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+//import * as env from 'env';
+
+//console.log(env)
 
 // globals
-const robotSecret = process.env.ROBOT_SECRET
-const robotLocation = process.env.ROBOT_LOCATION
+const robotSecret = 't9hacog4ff66yjh4a00vaprrvkpq3ltwf3b3red7su4philq';
+const robotLocation = 'arm-main.urykdsecy6.viam.cloud'
 const grabberPin = '8'
 const moveDistance = 20
+const ignoreInterrupts = true
 
 /*
   Create obstacles
@@ -159,20 +163,6 @@ async function connect() {
   });
 }
 
-
-//Functions calling the grab and release actions of the claw 
-// function grabbutton() {
-//   return <HTMLButtonElement>document.getElementById('grab-button');
-// }
-
-// function releasebutton() {
-//   return <HTMLButtonElement>document.getElementById('release-button');
-// }
-
-// function homebutton() {
-//   return <HTMLButtonElement>document.getElementById('home-button');
-// }
-
 function forwardbutton() {
   return <HTMLButtonElement>document.getElementById('forward-button');
 
@@ -215,7 +205,7 @@ let constraints: Constraints = {
 
 
 async function home(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a Worldstate that has the GeometriesInFrame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -244,13 +234,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  try {
-    //homebutton().disabled = true;
-   
-    //console.log(await client.resourceNames())
-    //console.log('this is the framesys below')
-    //console.log(await client.frameSystemConfig(SDK.commonApi.Transform['']))
-   
+  try {   
     let myResourceName: ResourceName = {
       namespace: 'rdk', 
       type: 'component', 
@@ -259,8 +243,6 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   }
     
     await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
-
-
    
   } finally {
     //homebutton().disabled = false;
@@ -268,7 +250,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function forward(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -311,7 +293,7 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function back(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -354,7 +336,7 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function right(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -397,7 +379,7 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function left(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
   
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -440,7 +422,7 @@ async function left(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
@@ -489,7 +471,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
 }
 
 async function up(motionClient: MotionClient, armClient: ArmClient) {
-  if (await armClient.isMoving()) { return }
+  if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
 
@@ -586,74 +568,75 @@ async function main() {
 
   // Update the onclick handlers in the main function:
 
-  forwardbutton().onclick = async () => {
+  forwardbutton().onmousedown = async () => {
+    forwardHandler()
+  };
+
+  async function forwardHandler() {
     if (forwardbutton().classList.contains('error')) return;
     try {
       await back(motionClient, armClient);
+      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
     } catch (error) {
       console.log(error);
       forwardbutton().classList.add('error');
       forwardbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { forwardbutton().classList.remove('error'); }, 3000 )
     }
+  }
+
+  backbutton().onmousedown = async () => {
+    backHandler()
   };
 
-  backbutton().onclick = async () => {
+  async function backHandler() {
     if (backbutton().classList.contains('error')) return;
     try {
       await forward(motionClient, armClient);
+      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
     } catch (error) {
       console.log(error);
       backbutton().classList.add('error');
       backbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { backbutton().classList.remove('error'); }, 3000 )
     }
+  }
+
+  rightbutton().onmousedown = async () => {
+    rightHandler()
   };
 
-  rightbutton().onclick = async () => {
+  async function rightHandler() {
     if (rightbutton().classList.contains('error')) return;
     try {
       await right(motionClient, armClient);
+      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
     } catch (error) {
       console.log(error);
       rightbutton().classList.add('error');
       rightbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { rightbutton().classList.remove('error'); }, 3000 )
     }
-  };
-
-  // async function rightLoop(client: Client, event) {
-  //   // event.preventDefault();
-  //   let stop: boolean = false;
-  //   let mouseUp = async () => {
-  //     stop = true
-  //   };
-  //   rightbutton().addEventListener("onmouseup", mouseUp);
-  //   let i = 0;
-  //   while (!stop) {
-  //     await right(client);
-  //     await delay(20);
-  //     i++;
-  //     if (i > 12) {
-  //       break
-  //     }
-  //   }
-  //   rightbutton().removeEventListener("onmouseup", mouseUp);
-  // }
-
-  rightbutton().onmousedown = async (event) => {
-    await right(motionClient, armClient);
   }
 
-  leftbutton().onclick = async () => {
+  leftbutton().onmousedown = async () => {
+    leftHandler()
+  };
+
+  async function leftHandler() {
     if (leftbutton().classList.contains('error')) return;
     try {
       await left(motionClient, armClient);
+      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
     } catch (error) {
       console.log(error);
       leftbutton().classList.add('error');
       leftbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { leftbutton().classList.remove('error'); }, 3000 )
     }
-  };
+  }
 
-  dropbutton().onclick = async () => {
+  dropbutton().onmousedown = async () => {
     if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
@@ -666,23 +649,15 @@ async function main() {
     } catch (error) {
       console.log(error);
       dropbutton().classList.add('error');
+      setTimeout( () => { dropbutton().classList.remove('error'); }, 3000 )
     }
   }
 
-
-  // upbutton().onclick = async () => {
-  //   await up(client);
-  // }
-
-  // grabbutton().disabled = false;
-  // releasebutton().disabled = false;
-  // homebutton().disabled = false;
   forwardbutton().disabled = false;
   backbutton().disabled = false;
   rightbutton().disabled = false;
   leftbutton().disabled = false;
   dropbutton().disabled = false;
-  // upbutton().disabled = false;
 }
 
 main();
