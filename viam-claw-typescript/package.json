@@ -9,7 +9,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "esbuild": "^0.16.12"
+    "esbuild": "0.16.17",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
     "@viamrobotics/sdk": "^0.0.47",

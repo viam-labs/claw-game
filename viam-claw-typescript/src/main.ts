@@ -1,20 +1,149 @@
-
-import { Client, BoardClient, MotionClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
+import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+
+// globals
+const robotSecret = process.env.ROBOT_SECRET
+const robotLocation = process.env.ROBOT_LOCATION
+const grabberPin = '8'
+const moveDistance = 20
+
+/*
+  Create obstacles
+*/
+const holeObject: SDK.Geometry = {
+  center: {
+    x: 470, 
+    y: 120, 
+    z: 0, 
+    oX: 0, 
+    oY: 0, 
+    oZ: 1, 
+    theta: 15
+  }, 
+  box: {
+    dimsMm: {
+      x: 250, 
+      y: 400, 
+      z: 300
+    }
+  }, 
+  label: ""
+}
+
+const tableObject: SDK.Geometry = {
+  center: {
+    x: 0,
+    y: 0,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  },
+  box: {
+    dimsMm: {
+      x: 2000, 
+      y: 2000, 
+      z: 30
+    }
+  },
+  label: ''
+}
+
+let frontWallObject: SDK.Geometry ={
+  center: {
+    x: 560,
+    y: 0,
+    z: 0,
+    theta: 15,
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+  }, 
+  box: {
+    dimsMm: {
+      x: 15, 
+      y: 2000, 
+      z: 1000
+    }
+  },
+  label: '',
+}
+
+let backWallObject: SDK.Geometry ={
+  center: {
+    x: 560,
+    y: 0,
+    z: 0,
+    theta: 15,
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+  }, 
+  box: {
+    dimsMm: {
+      x: 15, 
+      y: 2000, 
+      z: 1000
+    }
+  },
+  label: '',
+}
+
+let rightWallObject: SDK.Geometry ={
+  center: {
+    x: 0,
+    y: 600,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+  }, 
+  box: {
+    dimsMm: {
+      x: 15, 
+      y: 2000, 
+      z: 1000
+    }
+  },
+  label: '',
+}
+
+let leftWallObject: SDK.Geometry ={
+  center: {
+    x: 0,
+    y: 600,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1,
+  }, 
+  box: {
+    dimsMm: {
+      x: 15, 
+      y: 2000, 
+      z: 1000
+    }
+  },
+  label: '',
+}
+
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
   //in your Code Sample tab on your robot page. Check the Typescript code sample 
   //to get started. :)  
-  const secret = 't9hacog4ff66yjh4a00vaprrvkpq3ltwf3b3red7su4philq';
+  const secret = robotSecret;
   const credential = {
     payload: secret,
     type: 'robot-location-secret',
   };
 
   //This is the host address of the main part of your robot.
-  const host = 'arm-main.urykdsecy6.viam.cloud';
+  const host = robotLocation;
 
   //This is the signaling address of your robot. 
   const signalingAddress = 'https://app.viam.com:443';
@@ -85,73 +214,13 @@ let constraints: Constraints = {
 };
 
 
-async function home(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  // const mc = new MotionClient(client, name, {requestLogger: (req) => { console.log(req); } });
-  const mc = new MotionClient(client, name)
-
-  
-  //Add the hole obstacles to the Worldstate
-  let holeOrigin: SDK.Pose = {
-    x: 470, 
-    y: 120, 
-    z: 0, 
-    oX: 0, 
-    oY: 0, 
-    oZ: 1, 
-    theta: 15
-  }
-
-  let holedims: SDK.Vector3 ={
-    x: 250, 
-    y: 400, 
-    z: 300
-  }
-
-  let myHoleRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: holedims
-  }
-
-  let holeObject: SDK.Geometry ={
-    center: holeOrigin, 
-    box: myHoleRectangularPrism, 
-    label: ""
-  }
-
-  //Add table/floor obstacle to the Worldstate 
-  let tableOrigin: SDK.Pose = {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1
-  };
-
-
-  let table_dims: SDK.Vector3 = {
-    x: 2000, 
-    y: 2000, 
-    z: 30
-  }
-
-  let myRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: table_dims
-  }
-  
-  let table_object: SDK.Geometry = {
-    center: tableOrigin,
-    box: myRectangularPrism,
-    label: ''
-  }
+async function home(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a Worldstate that has the GeometriesInFrame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [table_object, holeObject],
+    geometriesList: [tableObject, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -159,9 +228,7 @@ async function home(client: Client) {
     transformsList: [],
   }
 
-  //Generate a sample "home" position around the drop hole to demonstrate 
-  //where the ball should be dropped 
-
+  // home position - where ball should be dropped and each game starts
   let home_pose: SDK.Pose = {
     x: 390,
     y: 105,
@@ -191,7 +258,7 @@ async function home(client: Client) {
       name: 'myArm' 
   }
     
-    await mc.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
+    await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
 
 
    
@@ -200,41 +267,10 @@ async function home(client: Client) {
   }
 }
 
-async function forward(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
-  
-  //Add a front wall obstacle to the WorldState
-
-  let frontWallOrigin: SDK.Pose = {
-    x: 560,
-    y: 0,
-    z: 0,
-    theta: 15,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let frontWalldims: SDK.Vector3 = {
-    x: 15, 
-    y: 2000, 
-    z: 1000
-  }
-
-  let frontRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: frontWalldims
-  }
-
-  let frontWallObject: SDK.Geometry ={
-    center: frontWallOrigin, 
-    box: frontRectangularPrism,
-    label: '',
-  }
+async function forward(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
     geometriesList: [frontWallObject],
@@ -254,10 +290,10 @@ async function forward(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let forwardPose: Pose = {
-    x: currentPosition.pose!.x + 20,
+    x: currentPosition.pose!.x + moveDistance,
     y: currentPosition.pose!.y,
     z: currentPosition.pose!.z,
     theta: currentPosition.pose!.theta,
@@ -266,52 +302,18 @@ async function forward(client: Client) {
     oZ: -1
   };
 
-  let forwardpose_in_frame: SDK.PoseInFrame ={
+  let forwardPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: forwardPose
   }
 
-  //Move x position forward by 50 units 
-  await mc.move(forwardpose_in_frame, myResourceName, myWorldState, constraints)
-
+  await motionClient.move(forwardPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function back(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
-  
-  //Add a back wall obstacle to the WorldState
-  
-
-  let backWallOrigin: SDK.Pose = {
-    x: 560,
-    y: 0,
-    z: 0,
-    theta: 15,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let backWalldims: SDK.Vector3 = {
-    x: 15, 
-    y: 2000, 
-    z: 1000
-  }
-
-  let frontRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: backWalldims
-  }
-
-  let backWallObject: SDK.Geometry ={
-    center: backWallOrigin, 
-    box: frontRectangularPrism,
-    label: '',
-  }
+async function back(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
     geometriesList: [backWallObject],
@@ -331,10 +333,10 @@ async function back(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let backPose: Pose = {
-    x: currentPosition.pose!.x -20,
+    x: currentPosition.pose!.x -moveDistance,
     y: currentPosition.pose!.y,
     z: currentPosition.pose!.z,
     theta: currentPosition.pose!.theta,
@@ -343,52 +345,18 @@ async function back(client: Client) {
     oZ: -1
   };
 
-  let backpose_in_frame: SDK.PoseInFrame ={
+  let backPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: backPose
   }
 
-  //Move x position forward by 50 units 
-  await mc.move(backpose_in_frame, myResourceName, myWorldState, constraints)
-
-  
-
+  await motionClient.move(backPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function right(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
-  
-  //Add a back wall obstacle to the WorldState
-  let rightWallOrigin: SDK.Pose = {
-    x: 0,
-    y: 600,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let rightWalldims: SDK.Vector3 = {
-    x: 15, 
-    y: 2000, 
-    z: 1000
-  }
-
-  let rightRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: rightWalldims
-  }
-
-  let rightWallObject: SDK.Geometry ={
-    center: rightWallOrigin, 
-    box: rightRectangularPrism,
-    label: '',
-  }
+async function right(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
     geometriesList: [rightWallObject],
@@ -408,11 +376,11 @@ async function right(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let rightPose: Pose = {
     x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y + 20,
+    y: currentPosition.pose!.y + moveDistance,
     z: currentPosition.pose!.z,
     theta: currentPosition.pose!.theta,
     oX: currentPosition.pose!.oX,
@@ -420,51 +388,18 @@ async function right(client: Client) {
     oZ: -1
   };
 
-  let rightpose_in_frame: SDK.PoseInFrame ={
+  let rightPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: rightPose
   }
 
-  //Move x position forward by 50 units 
-  await mc.move(rightpose_in_frame, myResourceName, myWorldState, constraints)
-
+  await motionClient.move(rightPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function left(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
+async function left(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
   
-  //Add a back wall obstacle to the WorldState
-
-  let leftWallOrigin: SDK.Pose = {
-    x: 0,
-    y: 600,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let leftWalldims: SDK.Vector3 = {
-    x: 15, 
-    y: 2000, 
-    z: 1000
-  }
-
-  let leftRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: leftWalldims
-  }
-
-  let leftWallObject: SDK.Geometry ={
-    center: leftWallOrigin, 
-    box: leftRectangularPrism,
-    label: '',
-  }
-
   //Create a WorldState that has Geometries in Frame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
     geometriesList: [leftWallObject],
@@ -484,11 +419,11 @@ async function left(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let leftPose: Pose = {
     x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y -20,
+    y: currentPosition.pose!.y -moveDistance,
     z: currentPosition.pose!.z,
     theta: currentPosition.pose!.theta,
     oX: currentPosition.pose!.oX,
@@ -496,81 +431,21 @@ async function left(client: Client) {
     oZ: -1
   };
 
-  let leftpose_in_frame: SDK.PoseInFrame ={
+  let leftPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: leftPose
   }
 
-  //Move x position forward by 50 units 
-  await mc.move(leftpose_in_frame, myResourceName, myWorldState, constraints)
-
+  await motionClient.move(leftPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function dropDown(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
-  
-  //Add a back wall obstacle to the WorldState
-
-  let droporigin: SDK.Pose = {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let dropdims: SDK.Vector3 = {
-    x: 2000, 
-    y: 2000, 
-    z: 30
-  }
-
-  let dropRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: dropdims
-  }
-
-  let dropWallObject: SDK.Geometry ={
-    center: droporigin, 
-    box: dropRectangularPrism,
-    label: '',
-  }
-
-  //create hole obstacles 
-  let holeOrigin: SDK.Pose = {
-    x: 470, 
-    y: 125, 
-    z: 0, 
-    oX: 0, 
-    oY: 0, 
-    oZ: 1, 
-    theta: 15
-  }
-
-  let holedims: SDK.Vector3 ={
-    x: 250, 
-    y: 400, 
-    z: 300
-  }
-
-  let myHoleRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: holedims
-  }
-
-  let holeObject: SDK.Geometry ={
-    center: holeOrigin, 
-    box: myHoleRectangularPrism, 
-    label: ""
-  }
+async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
-
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [dropWallObject, holeObject],
+    geometriesList: [tableObject, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -587,7 +462,7 @@ async function dropDown(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   
@@ -601,56 +476,26 @@ async function dropDown(client: Client) {
     oZ: currentPosition.pose!.oZ
   };
 
-  let droppose_in_frame: SDK.PoseInFrame ={
+  let dropPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: dropPose
   }
 
   //Drop the claw down
   console.log('im about to drop')
-  await mc.move(droppose_in_frame, myResourceName, myWorldState, constraints)
+  await motionClient.move(dropPoseInFrame, myResourceName, myWorldState, constraints)
   console.log('dropped')
 
 }
 
-async function up(client: Client) {
-  //When you create a new client, list your component name here.
-  const name = 'planning:builtin';
-  const mc = new MotionClient(client, name);
-  
-  //Add a back wall obstacle to the WorldState
-
-  let uporigin: SDK.Pose = {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  };
-
-  let updims: SDK.Vector3 = {
-    x: 2000, 
-    y: 2000, 
-    z: 30
-  }
-
-  let upRectangularPrism: SDK.RectangularPrism ={
-    dimsMm: updims
-  }
-
-  let upWallObject: SDK.Geometry ={
-    center: uporigin, 
-    box: upRectangularPrism,
-    label: '',
-  }
+async function up(motionClient: MotionClient, armClient: ArmClient) {
+  if (await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [upWallObject],
+    geometriesList: [],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -667,7 +512,7 @@ async function up(client: Client) {
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await mc.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   
@@ -681,29 +526,25 @@ async function up(client: Client) {
     oZ: currentPosition.pose!.oZ
   };
 
-  let uppose_in_frame: SDK.PoseInFrame ={
+  let upPoseInFrame: SDK.PoseInFrame ={
     referenceFrame: "world", 
     pose: upPose
   }
 
   //Pick the claw up 
   console.log('let`s go up')
-  await mc.move(uppose_in_frame, myResourceName, myWorldState, constraints)
+  await motionClient.move(upPoseInFrame, myResourceName, myWorldState, constraints)
   console.log('up!')
 
 }
 
-async function grab(client: Client) {
-
-  const name = 'myBoard';
-  const bc = new BoardClient(client, name);
-
+async function grab(boardClient: BoardClient) {
   try {
     //grabbutton().disabled = true;
 
-    console.log(await bc.getGPIO('8'));
+    console.log(await boardClient.getGPIO(grabberPin));
     console.log('i`m grabbin');
-    await bc.setGPIO('8', true);
+    await boardClient.setGPIO(grabberPin, true);
     
    
   } finally {
@@ -711,20 +552,14 @@ async function grab(client: Client) {
   }
 }
 
-async function release(client: Client) {
-  
-  const name = 'myBoard';
-  const bc = new BoardClient(client, name);
-
+async function release(boardClient: BoardClient) {
   try {
    // grabbutton().disabled = true;
 
-    console.log(await bc.getGPIO('8'));
-    await bc.setGPIO('8', false);
+    console.log(await boardClient.getGPIO(grabberPin));
+    await boardClient.setGPIO(grabberPin, false);
     await delay(1000);
     console.log('i let go now');
-    
-   
   } finally {
     //grabbutton().disabled = false;
   }
@@ -732,7 +567,7 @@ async function release(client: Client) {
 
 async function main() {
   // Connect to client
-  let client: Client;
+  let client: Client;  
   try {
     client = await connect();
     console.log('connected!');
@@ -740,21 +575,9 @@ async function main() {
     console.log(error);
     return;
   }
-
-  // Make the buttons in your webapp do something interesting :)
-  // grabbutton().onclick = async () => {
-  //   await grab(client);
-
-  // };
-
-  // releasebutton().onclick = async () => {
-  //   await release(client);
-  // }
-
-  // homebutton().onclick = async () => {
-  //   await home(client);
-
-  // };
+  const motionClient = new MotionClient(client, 'planning:builtin');
+  const boardClient = new BoardClient(client, 'myBoard');
+  const armClient = new ArmClient(client, 'planning:myArm');
 
   // Add this function at the top of your main.ts file
   function applyErrorClass(element: HTMLElement) {
@@ -766,7 +589,7 @@ async function main() {
   forwardbutton().onclick = async () => {
     if (forwardbutton().classList.contains('error')) return;
     try {
-      await back(client);
+      await back(motionClient, armClient);
     } catch (error) {
       console.log(error);
       forwardbutton().classList.add('error');
@@ -777,7 +600,7 @@ async function main() {
   backbutton().onclick = async () => {
     if (backbutton().classList.contains('error')) return;
     try {
-      await forward(client);
+      await forward(motionClient, armClient);
     } catch (error) {
       console.log(error);
       backbutton().classList.add('error');
@@ -788,7 +611,7 @@ async function main() {
   rightbutton().onclick = async () => {
     if (rightbutton().classList.contains('error')) return;
     try {
-      await right(client);
+      await right(motionClient, armClient);
     } catch (error) {
       console.log(error);
       rightbutton().classList.add('error');
@@ -816,13 +639,13 @@ async function main() {
   // }
 
   rightbutton().onmousedown = async (event) => {
-    await right(client);
+    await right(motionClient, armClient);
   }
 
   leftbutton().onclick = async () => {
     if (leftbutton().classList.contains('error')) return;
     try {
-      await left(client);
+      await left(motionClient, armClient);
     } catch (error) {
       console.log(error);
       leftbutton().classList.add('error');
@@ -833,13 +656,13 @@ async function main() {
   dropbutton().onclick = async () => {
     if (dropbutton().classList.contains('error')) return;
     try {
-      await dropDown(client);
-      await grab(client);
-      await delay(3000);
-      await up(client);
-      await home(client);
+      await dropDown(motionClient, armClient);
+      await grab(boardClient);
       await delay(1000);
-      await release(client);
+      await up(motionClient, armClient);
+      await home(motionClient, armClient);
+      await delay(1000);
+      await release(boardClient);
     } catch (error) {
       console.log(error);
       dropbutton().classList.add('error');
