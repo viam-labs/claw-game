@@ -451,7 +451,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 250,
+    z: 240,
     theta: 0,
     oX: 0,
     oY: 0,
