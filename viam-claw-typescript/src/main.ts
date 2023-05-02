@@ -98,7 +98,7 @@ let backWallObject: SDK.Geometry ={
 let rightWallObject: SDK.Geometry ={
   center: {
     x: 0,
-    y: 600,
+    y: 700,
     z: 0,
     theta: 105,
     oX: 0,
@@ -571,6 +571,9 @@ async function main() {
   forwardbutton().onmousedown = async () => {
     forwardHandler()
   };
+  forwardbutton().ontouchstart = async () => {
+    forwardHandler()
+  };
 
   async function forwardHandler() {
     if (forwardbutton().classList.contains('error')) return;
@@ -586,6 +589,9 @@ async function main() {
   }
 
   backbutton().onmousedown = async () => {
+    backHandler()
+  };
+  backbutton().ontouchstart = async () => {
     backHandler()
   };
 
@@ -605,6 +611,9 @@ async function main() {
   rightbutton().onmousedown = async () => {
     rightHandler()
   };
+  rightbutton().ontouchstart = async () => {
+    rightHandler()
+  };
 
   async function rightHandler() {
     if (rightbutton().classList.contains('error')) return;
@@ -620,6 +629,9 @@ async function main() {
   }
 
   leftbutton().onmousedown = async () => {
+    leftHandler()
+  };
+  leftbutton().ontouchstart = async () => {
     leftHandler()
   };
 

@@ -24,7 +24,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>             </button>
             <button id="drop-button" class="w-32 h-32 border-2 border-gray-700 bg-[#222525] rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
-              <img src="./claw-machine.png" alt="Image description" class="w-16 h-16">
+             <!-- <img src="./claw-machine.png" alt="Image description" class="w-16 h-16">-->
+             <b>GRAB</b>
             </button>
             <button id="right-button" class="w-32 h-32 border-2 border-gray-700 rounded-lg flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#FFD400" class="w-12 h-12">
@@ -51,11 +52,21 @@
           button.classList.add('custom-box-shadow-active');
         });
   
+        button.addEventListener('touchstart', () => {
+          button.classList.remove('custom-box-shadow');
+          button.classList.add('custom-box-shadow-active');
+        });
+
         button.addEventListener('mouseup', () => {
           button.classList.remove('custom-box-shadow-active');
           button.classList.add('custom-box-shadow');
         });
   
+        button.addEventListener('touchend', () => {
+          button.classList.remove('custom-box-shadow-active');
+          button.classList.add('custom-box-shadow');
+        });
+
         button.addEventListener('mouseleave', () => {
           button.classList.remove('custom-box-shadow-active');
           button.classList.add('custom-box-shadow');
