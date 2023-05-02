@@ -11,6 +11,7 @@ const robotLocation = 'arm-main.urykdsecy6.viam.cloud'
 const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
+const moveHeight = 500
 
 /*
   Create obstacles
@@ -118,7 +119,7 @@ let rightWallObject: SDK.Geometry ={
 let leftWallObject: SDK.Geometry ={
   center: {
     x: 0,
-    y: 600,
+    y: 550,
     z: 0,
     theta: 105,
     oX: 0,
@@ -203,7 +204,6 @@ let constraints: Constraints = {
   collisionSpecificationList: [],
 };
 
-
 async function home(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
@@ -222,7 +222,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   let home_pose: SDK.Pose = {
     x: 390,
     y: 105,
-    z: 600,
+    z: moveHeight,
     theta: 0,
     oX: 0,
     oY: 0,
@@ -278,9 +278,9 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
     x: currentPosition.pose!.x + moveDistance,
     y: currentPosition.pose!.y,
     z: currentPosition.pose!.z,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    theta: 0,
+    oX: 0,
+    oY: 0, 
     oZ: -1
   };
 
@@ -321,9 +321,9 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
     x: currentPosition.pose!.x -moveDistance,
     y: currentPosition.pose!.y,
     z: currentPosition.pose!.z,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    theta: 0,
+    oX: 0,
+    oY: 0,
     oZ: -1
   };
 
@@ -364,9 +364,9 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y + moveDistance,
     z: currentPosition.pose!.z,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    theta: 0,
+    oX: 0,
+    oY: 0,
     oZ: -1
   };
 
@@ -407,9 +407,9 @@ async function left(motionClient: MotionClient, armClient: ArmClient) {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y -moveDistance,
     z: currentPosition.pose!.z,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    theta: 0,
+    oX: 0,
+    oY: 0,
     oZ: -1
   };
 
@@ -451,10 +451,10 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 230,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    z: 250,
+    theta: 0,
+    oX: 0,
+    oY: 0,
     oZ: currentPosition.pose!.oZ
   };
 
@@ -501,10 +501,10 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
   let upPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: 600,
-    theta: currentPosition.pose!.theta,
-    oX: currentPosition.pose!.oX,
-    oY: currentPosition.pose!.oY, 
+    z: moveHeight,
+    theta: 0,
+    oX: 0,
+    oY: 0,
     oZ: currentPosition.pose!.oZ
   };
 
@@ -568,9 +568,9 @@ async function main() {
 
   // Update the onclick handlers in the main function:
 
-  forwardbutton().onmousedown = async () => {
-    forwardHandler()
-  };
+  //forwardbutton().onmousedown = async () => {
+  //  forwardHandler()
+  //};
   forwardbutton().ontouchstart = async () => {
     forwardHandler()
   };
@@ -588,9 +588,9 @@ async function main() {
     }
   }
 
-  backbutton().onmousedown = async () => {
-    backHandler()
-  };
+  //backbutton().onmousedown = async () => {
+  //  backHandler()
+  //};
   backbutton().ontouchstart = async () => {
     backHandler()
   };
@@ -608,9 +608,9 @@ async function main() {
     }
   }
 
-  rightbutton().onmousedown = async () => {
-    rightHandler()
-  };
+  //rightbutton().onmousedown = async () => {
+  //  rightHandler()
+  //};
   rightbutton().ontouchstart = async () => {
     rightHandler()
   };
@@ -628,9 +628,9 @@ async function main() {
     }
   }
 
-  leftbutton().onmousedown = async () => {
-    leftHandler()
-  };
+  //leftbutton().onmousedown = async () => {
+  //  leftHandler()
+  //};
   leftbutton().ontouchstart = async () => {
     leftHandler()
   };
