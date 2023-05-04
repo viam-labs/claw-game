@@ -673,3 +673,28 @@ async function main() {
 }
 
 main();
+
+function typeWriter(txt, i, speed) {
+  let thisSpeed = speed
+  let el = document.getElementById("instructions")
+  if (i == 0) {
+    // clear content and swap avatar
+    el.innerHTML = ''
+    let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
+    document.getElementById("avatar").src = randImg
+  }
+  if (i < txt.length) {
+    el.innerHTML += txt.charAt(i);
+    if (txt.charAt(i-1) == '.') {
+      el.innerHTML = ''
+    } else if (txt.charAt(i) == '.') {
+      thisSpeed = 1000
+    }
+    i++;
+  } else if (i == txt.length) {
+    i = 0;
+    thisSpeed = 4000
+  }
+  setTimeout(function(){typeWriter(txt, i, speed)}, thisSpeed);
+}
+typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the arm to drop and grab. Good luck, and have fun!', 0, 60)

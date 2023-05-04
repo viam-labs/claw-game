@@ -3,11 +3,78 @@
   <head>
     <title>THE CLAW</title>
     <link rel="icon" href="favicon.ico" />
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
-    
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
   </head>
-  <body class="flex justify-center items-center min-h-screen">
+  <body>
+
+    <div class="nes-container with-title is-centered" style="margin-top:20px;margin-left:300px; width:745px; padding: 0px; background-color: #6ded8a;">
+      <img src="images/chevron-up-svgrepo-com.svg" style="width:80px;margin: -10px;"/>
+      <table>
+      <tr>
+        <td><img src="images/chevron-left-svgrepo-com.svg" style="width:80px;margin: -10px;"/></td>
+        <td>
+    <div class="nes-table-responsive">
+      <table class="nes-table is-bordered is-centered">
+        <tbody>
+          <tr>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+          </tr>
+          <tr>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+          </tr>
+          <tr>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:80px" src="./images/arm.jpg"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+          </tr>
+          <tr>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+          </tr>
+          <tr>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </td>
+    <td><img src="images/chevron-right-svgrepo-com.svg" style="width:80px;margin: -10px;"/></td>
+  </tr></table>
+  <img src="images/chevron-down-svgrepo-com.svg" style="width:80px;margin: -10px;"/>
+
+  </div>
+  <table>
+    <tr><td>
+  <img id="avatar" src="images/avatar1.png" style="margin-left:290px;width:120px;"/>
+  </td>  
+  <td>
+  <section class="message -left">
+    <!-- Balloon -->
+    <div class="nes-balloon from-left">
+      <p id="instructions"></p>
+    </div>
+  </section>
+</td></tr>  
+</table>
+
     <div id="main">
       <div id="controls">
         <div id="directional-controls" class="flex flex-col items-center justify-center space-y-12">
