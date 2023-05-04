@@ -42,7 +42,7 @@ async def grab(board, doGrab):
 constraints = Constraints(orientation_constraint = [OrientationConstraint()])
 
 async def home(arm, motion_service):
-    # Makes sure to first move the arm up in z axis to 600
+    # Makes sure to first move the arm up in z axis
     await up(arm, motion_service)
 
     # Add a hole obstacle to the WorldState
@@ -61,7 +61,7 @@ async def home(arm, motion_service):
     world_state = WorldState(obstacles=[obstacles_in_frame])
 
     # Generate a sample "home" pose around the drop hole and demonstrate motion
-    home_pose = Pose(x=390.0, y=105.0, z=600.0, o_x=0, o_y=0, o_z=-1, theta=0)
+    home_pose = Pose(x=390.0, y=105.0, z=500.0, o_x=0, o_y=0, o_z=-1, theta=0)
     home_pose_in_frame = PoseInFrame(reference_frame="world", pose=home_pose)
 
     await motion_service.move(component_name=arm, destination=home_pose_in_frame, world_state=world_state, constraints=constraints)
@@ -80,7 +80,7 @@ async def test(arm, motion_service):
 
      # Generate a sample "test" pose around where to pick up floor level and demonstrate motion
      # Random test position within the enclosure
-    test_pose = Pose(x=00.0, y=380, z=600.0, o_x=0, o_y=0, o_z=-1, theta=0)
+    test_pose = Pose(x=00.0, y=380, z=500.0, o_x=0, o_y=0, o_z=-1, theta=0)
     test_pose_in_frame = PoseInFrame(reference_frame="world", pose=test_pose)
 
     await motion_service.move(component_name=arm, destination=test_pose_in_frame, world_state=world_state, constraints=constraints)
@@ -276,7 +276,7 @@ async def up(arm, motion_service):
     up_pose = Pose(
         x=current_position.pose.x, 
         y=current_position.pose.y, 
-        z= 600,
+        z= 500,
         o_x=0, 
         o_y=0, 
         # This allows for it to always look down 
@@ -305,6 +305,7 @@ async def main():
     # my Subpart name, arm
     my_arm_resource= Arm.get_resource_name("planning:myArm")
     my_arm_resource.name= "myArm"
+    print("arm resource", my_arm_resource)
         
     commands = [args.command]
     if args.command == "sequence":

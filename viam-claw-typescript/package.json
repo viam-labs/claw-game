@@ -1,0 +1,24 @@
+{
+  "name": "@viamrobotics/sdk-ts-example",
+  "version": "0.0.1",
+  "description": "Viam SDK Quickstart",
+  "scripts": {
+    "start": "esbuild ./src/main.ts --bundle --outfile=static/main.js --servedir=static",
+    "build": "node ./build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "esbuild": "^0.16.17",
+    "esbuild-envfile-plugin": "^1.0.5",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@viamrobotics/sdk": "^0.0.53",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.3.2"
+  }
+}
