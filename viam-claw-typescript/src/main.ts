@@ -28,32 +28,12 @@ const holeObject: SDK.Geometry = {
   }, 
   box: {
     dimsMm: {
-      x: 250, 
-      y: 400, 
-      z: 300
+      x: 260, 
+      y: 360, 
+      z: 140
     }
   }, 
   label: ""
-}
-
-const tableObject: SDK.Geometry = {
-  center: {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1
-  },
-  box: {
-    dimsMm: {
-      x: 2000, 
-      y: 2000, 
-      z: 30
-    }
-  },
-  label: ''
 }
 
 let frontWallObject: SDK.Geometry ={
@@ -210,7 +190,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   //Create a Worldstate that has the GeometriesInFrame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
+    geometriesList: [holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -427,7 +407,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
+    geometriesList: [holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
