@@ -1,69 +1,71 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
     <title>THE CLAW</title>
     <link rel="icon" href="favicon.ico" />
     <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
   </head>
   <body>
 
-    <div class="nes-container with-title is-centered" style="margin-top:20px;margin-left:300px; width:745px; padding: 0px; background-color: #6ded8a;">
-      <img src="images/chevron-up-svgrepo-com.svg" style="width:80px;margin: -10px;"/>
+    <div class="nes-container with-title is-centered grid-container">
+      <img id="forward-button" src="images/chevron-up-svgrepo-com.svg" class="grid-arrow"/>
       <table>
       <tr>
-        <td><img src="images/chevron-left-svgrepo-com.svg" style="width:80px;margin: -10px;"/></td>
+        <td><img id="left-button" src="images/chevron-left-svgrepo-com.svg" class="grid-arrow"/></td>
         <td>
     <div class="nes-table-responsive">
-      <table class="nes-table is-bordered is-centered">
+      <table class="nes-table is-centered grid-table">
         <tbody>
           <tr>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
           </tr>
           <tr>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
           </tr>
           <tr>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:80px" src="./images/arm.jpg"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img id="drop-button" style="width:80px" src="./images/arm.jpg"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
           </tr>
           <tr>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
           </tr>
           <tr>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
-            <th><img style="width:100px" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th class="grid-drop"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <th><img class="grid-quad" src="images/8bit-ball.png"></th>
           </tr>
         </tbody>
       </table>
     </div>
     </td>
-    <td><img src="images/chevron-right-svgrepo-com.svg" style="width:80px;margin: -10px;"/></td>
+    <td><img id="right-button" src="images/chevron-right-svgrepo-com.svg" class="grid-arrow"/></td>
   </tr></table>
-  <img src="images/chevron-down-svgrepo-com.svg" style="width:80px;margin: -10px;"/>
+  <img id="back-button" src="images/chevron-down-svgrepo-com.svg" class="grid-arrow"/>
 
   </div>
   <table>
     <tr><td>
-  <img id="avatar" src="images/avatar1.png" style="margin-left:290px;width:120px;"/>
+  <img id="avatar" src="images/avatar1.png" class="grid-avatar"/>
   </td>  
   <td>
   <section class="message -left">
@@ -75,74 +77,33 @@
 </td></tr>  
 </table>
 
-    <div id="main">
-      <div id="controls">
-        <div id="directional-controls" class="flex flex-col items-center justify-center space-y-12">
-          <div id="button-row-one" class="w-full flex items-center justify-center">
-            <button id="forward-button" class="w-32 h-32 border-2 border-gray-700 rounded-lg flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#00EF83" class="w-12 h-12">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-              </svg>  
-            </button>
-          </div>
-          <div id="button-row-two" class="w-full flex items-center justify-center space-x-12">
-            <button id="left-button" class="w-32 h-32 border-2 border-gray-700 rounded-lg flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#9F0049" class="w-12 h-12">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>             </button>
-            <button id="drop-button" class="w-32 h-32 border-2 border-gray-700 bg-[#222525] rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
-             <!-- <img src="./claw-machine.png" alt="Image description" class="w-16 h-16">-->
-             <b>GRAB</b>
-            </button>
-            <button id="right-button" class="w-32 h-32 border-2 border-gray-700 rounded-lg flex items-center justify-center shadow-lg hover:bg-gray-50 focus:shadow-none custom-box-shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#FFD400" class="w-12 h-12">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>      
-            </button>
-          </div>
-          <div id="button-row-three" class="w-full flex items-center justify-center">
-            <button id="back-button" class="w-32 h-32 border-2 border-gray-700 rounded-lg flex items-center justify-center shadow-lg hover:bg-blue-50 focus:shadow-none custom-box-shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#A51AFF" class="w-12 h-12">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>   
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+   
     <script>
-      const buttons = document.querySelectorAll('.custom-box-shadow');
-  
-      buttons.forEach((button) => {
-        button.addEventListener('mousedown', () => {
-          button.classList.remove('custom-box-shadow');
-          button.classList.add('custom-box-shadow-active');
-        });
-  
-        button.addEventListener('touchstart', () => {
-          button.classList.remove('custom-box-shadow');
-          button.classList.add('custom-box-shadow-active');
-        });
-
-        button.addEventListener('mouseup', () => {
-          button.classList.remove('custom-box-shadow-active');
-          button.classList.add('custom-box-shadow');
-        });
-  
-        button.addEventListener('touchend', () => {
-          button.classList.remove('custom-box-shadow-active');
-          button.classList.add('custom-box-shadow');
-        });
-
-        button.addEventListener('mouseleave', () => {
-          button.classList.remove('custom-box-shadow-active');
-          button.classList.add('custom-box-shadow');
-        });
-        button.addEventListener('mouseout', () => {
-          button.classList.remove('custom-box-shadow-active');
-          button.classList.add('custom-box-shadow');
-        });
-      });
+      // avatar text
+      function typeWriter(txt, i, speed) {
+        let thisSpeed = speed
+        let el = document.getElementById("instructions")
+        if (i == 0) {
+          // clear content and swap avatar
+          el.innerHTML = ''
+          let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
+          document.getElementById("avatar").src = randImg
+        }
+        if (i < txt.length) {
+          el.innerHTML += txt.charAt(i);
+          if (txt.charAt(i-1) == '.') {
+            el.innerHTML = ''
+          } else if (txt.charAt(i) == '.') {
+            thisSpeed = 1000
+          }
+          i++;
+        } else if (i == txt.length) {
+          i = 0;
+          thisSpeed = 4000
+        }
+        setTimeout(function(){typeWriter(txt, i, speed)}, thisSpeed);
+      }
+      typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the arm to drop and grab. Good luck, and have fun!', 0, 60)
     </script>
     <script type="module" src="main.js">
     </script>

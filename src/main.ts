@@ -28,32 +28,12 @@ const holeObject: SDK.Geometry = {
   }, 
   box: {
     dimsMm: {
-      x: 250, 
-      y: 400, 
-      z: 300
+      x: 260, 
+      y: 360, 
+      z: 140
     }
   }, 
   label: ""
-}
-
-const tableObject: SDK.Geometry = {
-  center: {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1
-  },
-  box: {
-    dimsMm: {
-      x: 2000, 
-      y: 2000, 
-      z: 30
-    }
-  },
-  label: ''
 }
 
 let frontWallObject: SDK.Geometry ={
@@ -165,24 +145,24 @@ async function connect() {
 }
 
 function forwardbutton() {
-  return <HTMLButtonElement>document.getElementById('forward-button');
+  return <HTMLImageElement>document.getElementById('forward-button');
 
 }
 
 function backbutton() {
-  return <HTMLButtonElement>document.getElementById('back-button');
+  return <HTMLImageElement>document.getElementById('back-button');
 }
 
 function rightbutton() {
-  return <HTMLButtonElement>document.getElementById('right-button');
+  return <HTMLImageElement>document.getElementById('right-button');
 }
 
 function leftbutton() {
-  return <HTMLButtonElement>document.getElementById('left-button');
+  return <HTMLImageElement>document.getElementById('left-button');
 }
 
 function dropbutton() {
-  return <HTMLButtonElement>document.getElementById('drop-button');
+  return <HTMLImageElement>document.getElementById('drop-button');
 }
 
 // function upbutton() {
@@ -210,7 +190,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   //Create a Worldstate that has the GeometriesInFrame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
+    geometriesList: [holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -427,7 +407,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
+    geometriesList: [holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -447,7 +427,6 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
-  
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
@@ -464,7 +443,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   }
 
   //Drop the claw down
-  console.log('im about to drop')
+  console.log('im about to drop to' + JSON.stringify(dropPoseInFrame))
   await motionClient.move(dropPoseInFrame, myResourceName, myWorldState, constraints)
   console.log('dropped')
 
@@ -567,11 +546,14 @@ async function main() {
   }
 
   // Update the onclick handlers in the main function:
-
-  //forwardbutton().onmousedown = async () => {
-  //  forwardHandler()
-  //};
+  let useTouch = false;
+  
   forwardbutton().ontouchstart = async () => {
+    useTouch = true
+    forwardHandler()
+  };
+  forwardbutton().onmousedown = async () => {
+    if (useTouch) return
     forwardHandler()
   };
 
@@ -588,10 +570,12 @@ async function main() {
     }
   }
 
-  //backbutton().onmousedown = async () => {
-  //  backHandler()
-  //};
+  backbutton().onmousedown = async () => {
+    if (useTouch) return
+    backHandler()
+  };
   backbutton().ontouchstart = async () => {
+    useTouch = true
     backHandler()
   };
 
@@ -608,10 +592,12 @@ async function main() {
     }
   }
 
-  //rightbutton().onmousedown = async () => {
-  //  rightHandler()
-  //};
+  rightbutton().onmousedown = async () => {
+    if (useTouch) return
+    rightHandler()
+  };
   rightbutton().ontouchstart = async () => {
+    useTouch = true
     rightHandler()
   };
 
@@ -628,10 +614,12 @@ async function main() {
     }
   }
 
-  //leftbutton().onmousedown = async () => {
-  //  leftHandler()
-  //};
+  leftbutton().onmousedown = async () => {
+    if (useTouch) return
+    leftHandler()
+  };
   leftbutton().ontouchstart = async () => {
+    useTouch = true;
     leftHandler()
   };
 
@@ -649,6 +637,15 @@ async function main() {
   }
 
   dropbutton().onmousedown = async () => {
+    if (useTouch) return
+    dropHandler()
+  };
+  dropbutton().ontouchstart = async () => {
+    useTouch = true;
+    dropHandler()
+  };
+
+  async function dropHandler() {
     if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
@@ -674,27 +671,17 @@ async function main() {
 
 main();
 
-function typeWriter(txt, i, speed) {
-  let thisSpeed = speed
-  let el = document.getElementById("instructions")
-  if (i == 0) {
-    // clear content and swap avatar
-    el.innerHTML = ''
-    let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
-    document.getElementById("avatar").src = randImg
+// disable user zooming
+document.addEventListener('touchmove', function (event) {
+  if (event.scale !== 1) { event.preventDefault(); }
+}, { passive: false });
+
+var lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+  var now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
   }
-  if (i < txt.length) {
-    el.innerHTML += txt.charAt(i);
-    if (txt.charAt(i-1) == '.') {
-      el.innerHTML = ''
-    } else if (txt.charAt(i) == '.') {
-      thisSpeed = 1000
-    }
-    i++;
-  } else if (i == txt.length) {
-    i = 0;
-    thisSpeed = 4000
-  }
-  setTimeout(function(){typeWriter(txt, i, speed)}, thisSpeed);
-}
-typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the arm to drop and grab. Good luck, and have fun!', 0, 60)
+  lastTouchEnd = now;
+}, false);
+
