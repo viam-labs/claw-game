@@ -1,13 +1,10 @@
 import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
-//import * as env from 'env';
-
-//console.log(env)
 
 // globals
-const robotSecret = 't9hacog4ff66yjh4a00vaprrvkpq3ltwf3b3red7su4philq';
-const robotLocation = 'arm-main.urykdsecy6.viam.cloud'
+const robotSecret = process.env.VIAM_SECRET
+const robotLocation = process.env.VIAM_LOCATION
 const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
