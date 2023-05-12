@@ -46,7 +46,18 @@ button {
     margin-left:235px;
     width: 605px;
     padding: 0px;
+}
+
+.grid-container-ready {
     background-color: #6ded8a;
+}
+
+.grid-container-moving {
+    background-color: #ffee99;
+}
+
+.grid-container-error {
+    background-color: #aa0000;
 }
 
 .grid-table {

@@ -547,106 +547,193 @@ async function main() {
 
   // Update the onclick handlers in the main function:
   let useTouch = false;
-  
+  let isMoving = false;
+
+  function styleMove(state) {
+    let element = document.getElementById('grid-container')
+    if (state === 'move') {
+      element.classList.remove('grid-container-error')
+      element.classList.remove('grid-container-ready')
+      element.classList.add('grid-container-moving')
+    } else if (state === 'ready') {
+      element.classList.remove('grid-container-error')
+      element.classList.remove('grid-container-moving')
+      element.classList.add('grid-container-ready')
+    } else if (state === 'error') {
+      element.classList.remove('grid-container-moving')
+      element.classList.remove('grid-container-ready')
+      element.classList.add('grid-container-error')
+    }
+  }
+
   forwardbutton().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
     useTouch = true
-    forwardHandler()
+    let success = await forwardHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
   forwardbutton().onmousedown = async () => {
+    if (isMoving) return
     if (useTouch) return
-    forwardHandler()
+    isMoving = true
+    styleMove('move')
+    let success = await forwardHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
 
   async function forwardHandler() {
-    if (forwardbutton().classList.contains('error')) return;
     try {
       await back(motionClient, armClient);
       if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
     } catch (error) {
       console.log(error);
-      forwardbutton().classList.add('error');
-      forwardbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { forwardbutton().classList.remove('error'); }, 3000 )
+      styleMove('error')
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
+      return false
     }
+    return true
   }
 
   backbutton().onmousedown = async () => {
+    if (isMoving) return
     if (useTouch) return
-    backHandler()
+    styleMove('move')
+    isMoving = true
+    let success = await backHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
   backbutton().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
     useTouch = true
-    backHandler()
+    let success = await backHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
 
   async function backHandler() {
-    if (backbutton().classList.contains('error')) return;
     try {
       await forward(motionClient, armClient);
       if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
     } catch (error) {
       console.log(error);
-      backbutton().classList.add('error');
-      backbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { backbutton().classList.remove('error'); }, 3000 )
+      styleMove('error')
+      setTimeout( () => { styleMove('error'); isMoving = false; }, 3000 )
+      return false
     }
+    return true
   }
 
   rightbutton().onmousedown = async () => {
+    if (isMoving) return
     if (useTouch) return
-    rightHandler()
+    isMoving = true
+    styleMove('move')
+    let success = await rightHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
   rightbutton().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
     useTouch = true
-    rightHandler()
+    let success = await rightHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
 
   async function rightHandler() {
-    if (rightbutton().classList.contains('error')) return;
     try {
       await right(motionClient, armClient);
       if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
     } catch (error) {
       console.log(error);
-      rightbutton().classList.add('error');
-      rightbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { rightbutton().classList.remove('error'); }, 3000 )
+      styleMove('error')
+      setTimeout( () => { styleMove('error'); isMoving = false; }, 3000 )
+      return false
     }
+    return true
   }
 
   leftbutton().onmousedown = async () => {
+    if (isMoving) return
     if (useTouch) return
-    leftHandler()
+    styleMove('move')
+    isMoving = true
+    let success = await leftHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
   leftbutton().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
     useTouch = true;
-    leftHandler()
+    let success = await leftHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
 
   async function leftHandler() {
-    if (leftbutton().classList.contains('error')) return;
     try {
       await left(motionClient, armClient);
       if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
     } catch (error) {
       console.log(error);
-      leftbutton().classList.add('error');
-      leftbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { leftbutton().classList.remove('error'); }, 3000 )
+      styleMove('error')
+      setTimeout( () => { styleMove('error'); isMoving = false; }, 3000 )
+      return false
     }
+    return true
   }
 
   dropbutton().onmousedown = async () => {
+    if (isMoving) return
     if (useTouch) return
-    dropHandler()
+    isMoving = true
+    styleMove('move')
+    let success = await dropHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
   dropbutton().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
     useTouch = true;
-    dropHandler()
+    let success = await dropHandler()
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
   };
 
   async function dropHandler() {
-    if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
       await grab(boardClient);
@@ -657,9 +744,11 @@ async function main() {
       await release(boardClient);
     } catch (error) {
       console.log(error);
-      dropbutton().classList.add('error');
-      setTimeout( () => { dropbutton().classList.remove('error'); }, 3000 )
+      styleMove('error')
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, 2000 )
+      return false
     }
+    return true
   }
 
   forwardbutton().disabled = false;
