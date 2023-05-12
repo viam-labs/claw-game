@@ -275,6 +275,8 @@ async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, 
     let xOffset = 0
     if (xTarget < 0) {
       yOffset = 0 - offset
+    } else if (xTarget === 0) {
+      // do nothing
     } else {
       xOffset = 0 - offset
       yOffset = offset
