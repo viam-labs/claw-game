@@ -4,6 +4,7 @@
   "description": "Viam SDK Quickstart",
   "scripts": {
     "start": "node ./build.js",
+    "start-simple": "node ./build-simple.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
