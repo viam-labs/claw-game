@@ -1,6 +1,9 @@
 import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+//import * as env from 'env';
+
+//console.log(env)
 
 // globals
 const robotSecret = process.env.VIAM_SECRET
@@ -9,18 +12,6 @@ const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
 const moveHeight = 500
-const gridSize = 3
-const reachMm = 560
-// if we mount the arm straight we don't need this
-const offset = 90
-const quadrantSize = (reachMm*2)/gridSize
-
-const myResourceName: ResourceName = {
-  namespace: 'rdk', 
-  type: 'component', 
-  subtype: 'arm', 
-  name: 'myArm' 
-}
 
 /*
   Create obstacles
@@ -37,17 +28,37 @@ const holeObject: SDK.Geometry = {
   }, 
   box: {
     dimsMm: {
-      x: 260, 
-      y: 360, 
-      z: 140
+      x: 250, 
+      y: 400, 
+      z: 300
     }
   }, 
   label: ""
 }
 
+const tableObject: SDK.Geometry = {
+  center: {
+    x: 0,
+    y: 0,
+    z: 0,
+    theta: 105,
+    oX: 0,
+    oY: 0,
+    oZ: 1
+  },
+  box: {
+    dimsMm: {
+      x: 2000, 
+      y: 2000, 
+      z: 30
+    }
+  },
+  label: ''
+}
+
 let frontWallObject: SDK.Geometry ={
   center: {
-    x: reachMm,
+    x: 560,
     y: 0,
     z: 0,
     theta: 15,
@@ -67,7 +78,7 @@ let frontWallObject: SDK.Geometry ={
 
 let backWallObject: SDK.Geometry ={
   center: {
-    x: reachMm,
+    x: 560,
     y: 0,
     z: 0,
     theta: 15,
@@ -154,51 +165,24 @@ async function connect() {
 }
 
 function forwardbutton() {
-  return <HTMLImageElement>document.getElementById('forward-button');
+  return <HTMLButtonElement>document.getElementById('forward-button');
 
 }
 
 function backbutton() {
-  return <HTMLImageElement>document.getElementById('back-button');
+  return <HTMLButtonElement>document.getElementById('back-button');
 }
 
 function rightbutton() {
-  return <HTMLImageElement>document.getElementById('right-button');
+  return <HTMLButtonElement>document.getElementById('right-button');
 }
 
 function leftbutton() {
-  return <HTMLImageElement>document.getElementById('left-button');
+  return <HTMLButtonElement>document.getElementById('left-button');
 }
 
 function dropbutton() {
-  return <HTMLImageElement>document.getElementById('drop-button');
-}
-
-function gridBackLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-back-left');
-}
-
-function gridBack() {
-  return <HTMLTableCellElement>document.getElementById('grid-back');
-}
-
-function gridBackRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-back-right');
-}
-
-function gridLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-left');
-}
-function gridRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-right');
-}
-
-function gridFrontLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-front-left');
-}
-
-function gridFrontRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-front-right');
+  return <HTMLButtonElement>document.getElementById('drop-button');
 }
 
 // function upbutton() {
@@ -226,7 +210,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   //Create a Worldstate that has the GeometriesInFrame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [holeObject],
+    geometriesList: [tableObject, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -250,59 +234,19 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  try {       
+  try {   
+    let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
+  }
+    
     await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
+   
   } finally {
     //homebutton().disabled = false;
   }
-}
-
-async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, x: number, y: number) {
-    //Create a Worldstate that has the GeometriesInFrame included 
-    let myObstaclesInFrame: SDK.GeometriesInFrame = {
-      referenceFrame: "world", 
-      geometriesList: [frontWallObject, backWallObject, leftWallObject, rightWallObject],
-    }
-    
-    let myWorldState: SDK.WorldState ={
-      obstaclesList: [myObstaclesInFrame],
-      transformsList: [],
-    }
-  
-    let xTarget = (quadrantSize*x)
-    let yTarget = (quadrantSize*y)
-    let yOffset = 0
-    let xOffset = 0
-    if (xTarget < 0) {
-      yOffset = 0 - offset
-    } else if (xTarget === 0) {
-      // do nothing
-    } else {
-      xOffset = 0 - offset
-      yOffset = offset
-    }
-    let pose: SDK.Pose = {
-      x: xTarget + xOffset,
-      y: yTarget + yOffset,
-      z: moveHeight,
-      theta: 0,
-      oX: 0,
-      oY: 0,
-      oZ: -1,
-    };
-    
-    console.log(pose)
-
-    let new_pose_in_frame: SDK.PoseInFrame ={
-      referenceFrame: "world", 
-      pose: pose
-    }
-  
-    try {       
-      await motionClient.move(new_pose_in_frame, myResourceName, myWorldState, constraints)
-    } finally {
-      //homebutton().disabled = false;
-    }
 }
 
 async function forward(motionClient: MotionClient, armClient: ArmClient) {
@@ -317,6 +261,13 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
   let myWorldState: SDK.WorldState ={
     obstaclesList: [myObstaclesInFrame],
     transformsList: [],
+  }
+
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
   }
 
   //Get current position of the arm 
@@ -355,6 +306,13 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
     transformsList: [],
   }
 
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
+  }
+
   //Get current position of the arm 
   console.log('im trying to print the current position')
   let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
@@ -389,6 +347,13 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
   let myWorldState: SDK.WorldState ={
     obstaclesList: [myObstaclesInFrame],
     transformsList: [],
+  }
+
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
   }
 
   //Get current position of the arm 
@@ -427,13 +392,20 @@ async function left(motionClient: MotionClient, armClient: ArmClient) {
     transformsList: [],
   }
 
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
+  }
+
   //Get current position of the arm 
   console.log('im trying to print the current position')
   let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let leftPose: Pose = {
     x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y - moveDistance,
+    y: currentPosition.pose!.y -moveDistance,
     z: currentPosition.pose!.z,
     theta: 0,
     oX: 0,
@@ -455,7 +427,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   //Create a WorldState that has Geometries in Frame included 
   let myObstaclesInFrame: SDK.GeometriesInFrame = {
     referenceFrame: "world", 
-    geometriesList: [holeObject],
+    geometriesList: [tableObject, holeObject],
   }
   
   let myWorldState: SDK.WorldState ={
@@ -463,11 +435,19 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
     transformsList: [],
   }
 
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
+  }
+
   //Get current position of the arm 
   console.log('im trying to print the current position')
   let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
+  
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
@@ -484,7 +464,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   }
 
   //Drop the claw down
-  console.log('im about to drop to' + JSON.stringify(dropPoseInFrame))
+  console.log('im about to drop')
   await motionClient.move(dropPoseInFrame, myResourceName, myWorldState, constraints)
   console.log('dropped')
 
@@ -503,6 +483,13 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
   let myWorldState: SDK.WorldState ={
     obstaclesList: [myObstaclesInFrame],
     transformsList: [],
+  }
+
+  let myResourceName: ResourceName = {
+      namespace: 'rdk', 
+      type: 'component', 
+      subtype: 'arm', 
+      name: 'myArm' 
   }
 
   //Get current position of the arm 
@@ -579,368 +566,101 @@ async function main() {
     element.classList.add("error");
   }
 
-  // Update the onclick handlers in the main function:
   let useTouch = false;
-  let isMoving = false;
 
-  function styleMove(state) {
-    let element = document.getElementById('grid-container')
-    if (state === 'move') {
-      element.classList.remove('grid-container-error')
-      element.classList.remove('grid-container-ready')
-      element.classList.add('grid-container-moving')
-    } else if (state === 'ready') {
-      element.classList.remove('grid-container-error')
-      element.classList.remove('grid-container-moving')
-      element.classList.add('grid-container-ready')
-    } else if (state === 'error') {
-      element.classList.remove('grid-container-moving')
-      element.classList.remove('grid-container-ready')
-      element.classList.add('grid-container-error')
-    }
-  }
+  // Update the onclick handlers in the main function:
+
+  forwardbutton().onmousedown = async () => {
+    if (useTouch) return
+    forwardHandler()
+  };
 
   forwardbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
     useTouch = true
-    let success = await forwardHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  forwardbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await forwardHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    forwardHandler()
   };
 
   async function forwardHandler() {
+    if (forwardbutton().classList.contains('error')) return;
     try {
       await back(motionClient, armClient);
       if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
     } catch (error) {
       console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
+      forwardbutton().classList.add('error');
+      forwardbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { forwardbutton().classList.remove('error'); }, 3000 )
     }
-    return true
   }
 
   backbutton().onmousedown = async () => {
-    if (isMoving) return
     if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await backHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    backHandler()
   };
   backbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
     useTouch = true
-    let success = await backHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    backHandler()
   };
-
-  gridBackLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBackLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridBack().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,0)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBack().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,0)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridBackRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBackRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(0,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(0,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(0,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(0,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridFrontLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridFrontLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  gridFrontRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridFrontRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  async function quadrantMoveHander(x,y) {
-    try {
-      await moveToQuadrant(motionClient, armClient, x, y);
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
 
   async function backHandler() {
+    if (backbutton().classList.contains('error')) return;
     try {
       await forward(motionClient, armClient);
       if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
     } catch (error) {
       console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
+      backbutton().classList.add('error');
+      backbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { backbutton().classList.remove('error'); }, 3000 )
     }
-    return true
   }
 
   rightbutton().onmousedown = async () => {
-    if (isMoving) return
     if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await rightHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    rightHandler()
   };
   rightbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
     useTouch = true
-    let success = await rightHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    rightHandler()
   };
 
   async function rightHandler() {
+    if (rightbutton().classList.contains('error')) return;
     try {
       await right(motionClient, armClient);
       if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
     } catch (error) {
       console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
+      rightbutton().classList.add('error');
+      rightbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { rightbutton().classList.remove('error'); }, 3000 )
     }
-    return true
   }
 
   leftbutton().onmousedown = async () => {
-    if (isMoving) return
     if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await leftHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    leftHandler()
   };
   leftbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true;
-    let success = await leftHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
+    useTouch = true
+    leftHandler()
   };
 
   async function leftHandler() {
+    if (leftbutton().classList.contains('error')) return;
     try {
       await left(motionClient, armClient);
       if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
     } catch (error) {
       console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
+      leftbutton().classList.add('error');
+      leftbutton()?.querySelector('svg')?.classList.add('icon');
+      setTimeout( () => { leftbutton().classList.remove('error'); }, 3000 )
     }
-    return true
   }
 
   dropbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await dropHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  dropbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true;
-    let success = await dropHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  async function dropHandler() {
+    if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
       await grab(boardClient);
@@ -951,11 +671,9 @@ async function main() {
       await release(boardClient);
     } catch (error) {
       console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 2000 )
-      return false
+      dropbutton().classList.add('error');
+      setTimeout( () => { dropbutton().classList.remove('error'); }, 3000 )
     }
-    return true
   }
 
   forwardbutton().disabled = false;
@@ -966,18 +684,3 @@ async function main() {
 }
 
 main();
-
-// disable user zooming
-document.addEventListener('touchmove', function (event) {
-  if (event.scale !== 1) { event.preventDefault(); }
-}, { passive: false });
-
-var lastTouchEnd = 0;
-document.addEventListener('touchend', function (event) {
-  var now = (new Date()).getTime();
-  if (now - lastTouchEnd <= 300) {
-    event.preventDefault();
-  }
-  lastTouchEnd = now;
-}, false);
-
