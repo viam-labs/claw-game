@@ -154,24 +154,24 @@ async function connect() {
 }
 
 function forwardbutton() {
-  return <HTMLImageElement>document.getElementById('forward-button');
+  return <HTMLTableCellElement>document.getElementById('forward-button');
 
 }
 
 function backbutton() {
-  return <HTMLImageElement>document.getElementById('back-button');
+  return <HTMLTableCellElement>document.getElementById('back-button');
 }
 
 function rightbutton() {
-  return <HTMLImageElement>document.getElementById('right-button');
+  return <HTMLTableCellElement>document.getElementById('right-button');
 }
 
 function leftbutton() {
-  return <HTMLImageElement>document.getElementById('left-button');
+  return <HTMLTableCellElement>document.getElementById('left-button');
 }
 
 function dropbutton() {
-  return <HTMLImageElement>document.getElementById('drop-button');
+  return <HTMLTableCellElement>document.getElementById('drop-button');
 }
 
 function gridBackLeft() {
@@ -200,11 +200,6 @@ function gridFrontLeft() {
 function gridFrontRight() {
   return <HTMLTableCellElement>document.getElementById('grid-front-right');
 }
-
-// function upbutton() {
-//   return <HTMLButtonElement>document.getElementById('up-button');
-// }
-
 
 //Creating a delay function for timing 
 function delay(time) {
@@ -589,10 +584,23 @@ async function main() {
       element.classList.remove('grid-container-error')
       element.classList.remove('grid-container-ready')
       element.classList.add('grid-container-moving')
+      // randomly animate
+      let rand = Math.floor(Math.random() * 50) + 1
+      if (rand < 20) {
+        let topMove = Math.floor(Math.random() * 100)
+        topMove *= Math.round(Math.random()) ? 1 : -1
+        let leftOrRight =  Math.round(Math.random()) ? 'left' : 'right'
+        console.log(leftOrRight, topMove)
+        let aEl = document.getElementById('animate-' + leftOrRight)
+        aEl.style.marginTop = aEl.style.marginTop + topMove
+        aEl.style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+      }
     } else if (state === 'ready') {
       element.classList.remove('grid-container-error')
       element.classList.remove('grid-container-moving')
       element.classList.add('grid-container-ready')
+      document.getElementById('animate-left').style.backgroundImage = ''
+      document.getElementById('animate-right').style.backgroundImage = ''
     } else if (state === 'error') {
       element.classList.remove('grid-container-moving')
       element.classList.remove('grid-container-ready')

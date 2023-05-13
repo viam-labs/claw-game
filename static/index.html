@@ -9,43 +9,43 @@
     <link href="styles.css" rel="stylesheet">
   </head>
   <body>
-
+    <div id="animate-left" class="animate-left"></div>
     <div id="grid-container" class="nes-container with-title is-centered grid-container grid-container-ready">
-      <img id="forward-button" src="images/chevron-up-svgrepo-com.svg" class="grid-arrow"/>
+      <div id="forward-button" class="grid-arrow grid-arrow-up"></div>
       <table>
       <tr>
-        <td><img id="left-button" src="images/chevron-left-svgrepo-com.svg" class="grid-arrow"/></td>
+        <td id="left-button" class="grid-arrow grid-arrow-left"></td>
         <td>
     <div class="nes-table-responsive">
       <table class="nes-table is-centered grid-table">
         <tbody>
           <tr>
-            <th id="grid-back-left"><img class="grid-quad" src="images/8bit-ball.png"></th>
-            <th id="grid-back"><img class="grid-quad" src="images/8bit-ball.png"></th>
-            <th id="grid-back-right"><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <td id="grid-back-left" class="grid-quad"></th>
+            <td id="grid-back" class="grid-quad"></th>
+            <td id="grid-back-right" class="grid-quad"></th>
           </tr>
           <tr>
-            <th id="grid-left"><img class="grid-quad" src="images/8bit-ball.png"></th>
-            <th><img id="drop-button" style="width:80px" src="./images/arm.jpg"></th>
-            <th id="grid-right"><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <td id="grid-left" class="grid-quad"></th>
+            <td class="grid-claw" id="drop-button"></th>
+            <th id="grid-right" class="grid-quad"></th>
           </tr>
           <tr>
-            <th id="grid-front-left"><img class="grid-quad" src="images/8bit-ball.png"></th>
-            <th class="grid-drop"></th>
-            <th id="grid-front-right"><img class="grid-quad" src="images/8bit-ball.png"></th>
+            <td id="grid-front-left" class="grid-quad"></th>
+            <td class="grid-drop"></th>
+            <td id="grid-front-right" class="grid-quad"></th>
           </tr>
         </tbody>
       </table>
     </div>
     </td>
-    <td><img id="right-button" src="images/chevron-right-svgrepo-com.svg" class="grid-arrow"/></td>
+    <td id="right-button" class="grid-arrow grid-arrow-right"></td>
+    </tr>
   </tr></table>
-  <img id="back-button" src="images/chevron-down-svgrepo-com.svg" class="grid-arrow"/>
-
+  <div id="back-button" class="grid-arrow grid-arrow-down"></div>
   </div>
   <table>
     <tr><td>
-  <img id="avatar" src="images/avatar1.png" class="grid-avatar"/>
+  <img id="avatar" src="images/robot-head-2.svg" class="grid-avatar"/>
   </td>  
   <td>
   <section class="message -left">
@@ -56,6 +56,7 @@
   </section>
 </td></tr>  
 </table>
+<div id="animate-right" class="animate-right"></div>
 
    
     <script>
@@ -66,8 +67,8 @@
         if (i == 0) {
           // clear content and swap avatar
           el.innerHTML = ''
-          let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
-          document.getElementById("avatar").src = randImg
+          //let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
+          //document.getElementById("avatar").src = randImg
         }
         if (i < txt.length) {
           el.innerHTML += txt.charAt(i);
@@ -83,7 +84,7 @@
         }
         setTimeout(function(){typeWriter(txt, i, speed)}, thisSpeed);
       }
-      typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the arm to drop and grab. Good luck, and have fun!', 0, 60)
+      typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the claw to drop and grab. Good luck, and have fun!', 0, 60)
     </script>
     <script type="module" src="main.js">
     </script>

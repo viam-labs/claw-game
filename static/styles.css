@@ -65,19 +65,83 @@ button {
 }
 
 .grid-quad {
-    width: 135px;
+    width: 155px;
+    height: 155px;
+    background-image: url('images/8bit-ball.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-origin: content-box;
 }
 
+.grid-claw {
+    background-image: url('images/robot-claw.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+}
 .grid-arrow {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+}
+
+.grid-arrow-right {
     width:80px;
-    margin: -10px;
+    margin: -20px;
+    background-image: url('images/chevron-right-svgrepo-com.svg');
+    background-position-y: 200px;
+}
+
+.grid-arrow-left {
+    width:80px;
+    margin: -20px;
+    background-image: url('images/chevron-left-svgrepo-com.svg');
+    background-position-y: 200px;
+}
+
+.grid-arrow-up {
+    background-image: url('images/chevron-up-svgrepo-com.svg');
+    background-position-x: 265px;
+    margin: -5px;
+    height: 80px
+}
+
+.grid-arrow-down {
+    background-image: url('images/chevron-down-svgrepo-com.svg');
+    background-position-x: 265px;
+    margin: -5px;
+    height: 80px
 }
 
 .grid-avatar {
-    margin-left:220px;
-    width:120px;
+    margin-top: 10px;
+    margin-right: 6px;
+    margin-left:240px;
+    width:100px;
 }
 
 .grid-drop {
     background: #000;
+}
+
+.animate-right {
+    float:right;
+    margin-top:-460px;
+    margin-right:100px;
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+}
+
+.animate-left {
+    float:left;
+    margin-top:300px;
+    margin-left:100px;
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-origin: content-box;
 }
