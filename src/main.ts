@@ -197,6 +197,10 @@ function gridFrontLeft() {
   return <HTMLTableCellElement>document.getElementById('grid-front-left');
 }
 
+function gridHome() {
+  return <HTMLTableCellElement>document.getElementById('grid-home');
+}
+
 function gridFrontRight() {
   return <HTMLTableCellElement>document.getElementById('grid-front-right');
 }
@@ -245,11 +249,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  try {       
-    await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
-  } finally {
-    //homebutton().disabled = false;
-  }
+  await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
 }
 
 async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, x: number, y: number) {
@@ -587,13 +587,8 @@ async function main() {
       // randomly animate
       let rand = Math.floor(Math.random() * 50) + 1
       if (rand < 20) {
-        let topMove = Math.floor(Math.random() * 100)
-        topMove *= Math.round(Math.random()) ? 1 : -1
-        let leftOrRight =  Math.round(Math.random()) ? 'left' : 'right'
-        console.log(leftOrRight, topMove)
-        let aEl = document.getElementById('animate-' + leftOrRight)
-        aEl.style.marginTop = aEl.style.marginTop + topMove
-        aEl.style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+        document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+        document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
       }
     } else if (state === 'ready') {
       element.classList.remove('grid-container-error')
@@ -804,6 +799,41 @@ async function main() {
       isMoving = false
     }
   };
+
+  gridHome().onmousedown = async () => {
+    if (isMoving) return
+    if (useTouch) return
+    styleMove('move')
+    isMoving = true
+    let success = await homeHandler();
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
+  };
+  gridHome().ontouchstart = async () => {
+    if (isMoving) return
+    styleMove('move')
+    isMoving = true
+    useTouch = true
+    let success = await homeHandler();
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
+  };
+  
+  async function homeHandler() {
+    try {
+      await home(motionClient, armClient);
+    } catch (error) {
+      console.log(error);
+      styleMove('error')
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
+      return false
+    }
+    return true
+  }
 
   gridFrontRight().onmousedown = async () => {
     if (isMoving) return

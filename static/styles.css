@@ -5,6 +5,9 @@ button {
     -ms-user-select: none;
 }
 
+.body {
+    background-color: #ddf;
+}
 .custom-box-shadow {
     box-shadow: 0 10px 0 0 #000000, 0 15px 0 0 #ffffff;
     transform: translateY(0);
@@ -121,27 +124,29 @@ button {
 }
 
 .grid-drop {
-    background: #000;
+    background: #999;
 }
 
 .animate-right {
     float:right;
     margin-top:-460px;
     margin-right:100px;
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     background-size: contain;
     background-repeat: no-repeat;
     background-origin: content-box;
+    image-rendering: pixelated;
 }
 
 .animate-left {
     float:left;
     margin-top:300px;
-    margin-left:100px;
-    width: 100px;
-    height: 100px;
+    margin-left:80px;
+    width: 150px;
+    height: 150px;
     background-size: contain;
     background-repeat: no-repeat;
     background-origin: content-box;
+    image-rendering: pixelated;
 }
