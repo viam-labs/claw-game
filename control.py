@@ -5,7 +5,7 @@ from viam.robot.client import RobotClient
 from viam.rpc.dial import Credentials, DialOptions
 from viam.components.board import Board
 from viam.components.arm import Arm
-from viam.services.motion import MotionServiceClient
+from viam.services.motion import MotionClient
 from viam.proto.common import Pose, PoseInFrame, Vector3, Geometry, GeometriesInFrame, RectangularPrism, WorldState
 from viam.proto.service.motion import Constraints, LinearConstraint, OrientationConstraint
 
@@ -298,7 +298,7 @@ async def main():
     print(robot.resource_names)
 
     # Pose using motion service, grabbing the service from local computer
-    motion_service = MotionServiceClient.from_robot(robot, "planning:builtin")
+    motion_service = MotionClient.from_robot(robot, "planning:builtin")
     
     # myBoard
     my_board = Board.from_robot(robot, "myBoard")
