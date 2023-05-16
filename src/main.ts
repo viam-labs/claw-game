@@ -14,6 +14,17 @@ const reachMm = 560
 // if we mount the arm straight we don't need this
 const offset = 90
 const quadrantSize = (reachMm*2)/gridSize
+let gridPositions = {
+  '1,1' : {x :270, y: 450}, 
+  '1,-1' : { x: 300, y: -283},
+  '-1,-1': {x: -373, y: -463},
+  '-1,0': {x: -373, y: -90},
+  '-1,1': {x: -373, y: 283},
+  '0,1': {x: 0, y: 373},
+  '0,-1': {x: 0, y: -373}
+}
+// if this is set to true, we calculate based on enclosure geometry
+const useQuandrantMath = false
 
 const myResourceName: ResourceName = {
   namespace: 'rdk', 
@@ -264,29 +275,45 @@ async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, 
       transformsList: [],
     }
   
-    let xTarget = (quadrantSize*x)
-    let yTarget = (quadrantSize*y)
-    let yOffset = 0
-    let xOffset = 0
-    if (xTarget < 0) {
-      yOffset = 0 - offset
-    } else if (xTarget === 0) {
-      // do nothing
-    } else {
-      xOffset = 0 - offset
-      yOffset = offset
-    }
     let pose: SDK.Pose = {
-      x: xTarget + xOffset,
-      y: yTarget + yOffset,
+      x: 390,
+      y: 105,
       z: moveHeight,
       theta: 0,
       oX: 0,
       oY: 0,
       oZ: -1,
-    };
-    
-    console.log(pose)
+    }
+
+    if (useQuandrantMath) {
+      let xTarget = (quadrantSize*x)
+      let yTarget = (quadrantSize*y)
+      let yOffset = 0
+      let xOffset = 0
+      if (xTarget < 0) {
+        yOffset = 0 - offset
+      } else if (xTarget === 0) {
+        // do nothing
+      } else {
+        xOffset = 0 - offset
+        yOffset = offset
+      }
+      pose = {
+        x: xTarget + xOffset,
+        y: yTarget + yOffset,
+        z: moveHeight,
+        theta: 0,
+        oX: 0,
+        oY: 0,
+        oZ: -1,
+      };
+    } else {
+      let gridLookup = x + ',' + y
+      pose.x = gridPositions[gridLookup].x
+      pose.y = gridPositions[gridLookup].y
+    }
+
+    console.log(x, y, pose)
 
     let new_pose_in_frame: SDK.PoseInFrame ={
       referenceFrame: "world", 
