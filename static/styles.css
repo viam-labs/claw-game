@@ -71,19 +71,20 @@ button {
     width: 155px;
     height: 155px;
     background-image: url('images/8bit-ball.png');
-    background-size: contain;
+    //background-size: contain;
     background-repeat: no-repeat;
     background-origin: content-box;
+    background-size: 100% 100%;
 }
 
 .grid-claw {
     background-image: url('images/robot-claw.svg');
-    background-size: contain;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-origin: content-box;
 }
 .grid-arrow {
-    background-size: contain;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-origin: content-box;
 }
@@ -92,26 +93,26 @@ button {
     width:80px;
     margin: -20px;
     background-image: url('images/chevron-right-svgrepo-com.svg');
-    background-position-y: 200px;
+    //background-position-y: 200px;
 }
 
 .grid-arrow-left {
     width:80px;
     margin: -20px;
     background-image: url('images/chevron-left-svgrepo-com.svg');
-    background-position-y: 200px;
+    //background-position-y: 200px;
 }
 
 .grid-arrow-up {
     background-image: url('images/chevron-up-svgrepo-com.svg');
-    background-position-x: 265px;
+    //background-position-x: 265px;
     margin: -5px;
     height: 80px
 }
 
 .grid-arrow-down {
     background-image: url('images/chevron-down-svgrepo-com.svg');
-    background-position-x: 265px;
+    //background-position-x: 265px;
     margin: -5px;
     height: 80px
 }
