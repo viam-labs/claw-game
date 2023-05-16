@@ -78,6 +78,8 @@ button {
 }
 
 .grid-claw {
+    width: 155px;
+    height: 155px;
     background-image: url('images/robot-claw.svg');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -91,6 +93,7 @@ button {
 
 .grid-arrow-right {
     width:80px;
+    height: 400px;
     margin: -20px;
     background-image: url('images/chevron-right-svgrepo-com.svg');
     //background-position-y: 200px;
@@ -98,6 +101,7 @@ button {
 
 .grid-arrow-left {
     width:80px;
+    height: 400px;
     margin: -20px;
     background-image: url('images/chevron-left-svgrepo-com.svg');
     //background-position-y: 200px;
