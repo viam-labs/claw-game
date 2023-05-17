@@ -6,9 +6,13 @@ import * as SDK from '@viamrobotics/sdk';
 const robotSecret = process.env.VIAM_SECRET
 const robotLocation = process.env.VIAM_LOCATION
 const grabberPin = '8'
-const minMoveDistance = 20
 // Additional distance to move after every move
 const moveAccel = 15
+// Min distance to move in a single move
+const minMoveDistance = 20
+// Max distance to move in a single move
+const maxMoveDistance = 200
+
 const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
@@ -658,7 +662,8 @@ async function main() {
   async function forwardHandler(moveDistance: number = minMoveDistance) {
     try {
       await back(motionClient, armClient, moveDistance);
-      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler(moveDistance + moveAccel)};
+      let nextMoveDistance = Math.min(moveDistance + moveAccel, maxMoveDistance);
+      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler(nextMoveDistance)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -902,7 +907,8 @@ async function main() {
   async function backHandler(moveDistance: number = minMoveDistance) {
     try {
       await forward(motionClient, armClient, moveDistance);
-      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler(moveDistance + moveAccel)};
+      let nextMoveDistance = Math.min(moveDistance + moveAccel, maxMoveDistance);
+      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler(nextMoveDistance)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -938,7 +944,8 @@ async function main() {
   async function rightHandler(moveDistance: number = minMoveDistance) {
     try {
       await right(motionClient, armClient, moveDistance);
-      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler(moveDistance + moveAccel)};
+      let nextMoveDistance = Math.min(moveDistance + moveAccel, maxMoveDistance);
+      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler(nextMoveDistance)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -974,7 +981,8 @@ async function main() {
   async function leftHandler(moveDistance: number = minMoveDistance) {
     try {
       await left(motionClient, armClient, moveDistance);
-      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler(moveDistance + moveAccel)};
+      let nextMoveDistance = Math.min(moveDistance + moveAccel, maxMoveDistance);
+      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler(nextMoveDistance)};
     } catch (error) {
       console.log(error);
       styleMove('error')
