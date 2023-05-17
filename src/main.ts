@@ -6,7 +6,9 @@ import * as SDK from '@viamrobotics/sdk';
 const robotSecret = process.env.VIAM_SECRET
 const robotLocation = process.env.VIAM_LOCATION
 const grabberPin = '8'
-const moveDistance = 20
+const minMoveDistance = 20
+// Additional distance to move after every move
+const moveAccel = 15
 const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
@@ -327,7 +329,7 @@ async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, 
     }
 }
 
-async function forward(motionClient: MotionClient, armClient: ArmClient) {
+async function forward(motionClient: MotionClient, armClient: ArmClient, moveDistance: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
@@ -363,7 +365,7 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
   await motionClient.move(forwardPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function back(motionClient: MotionClient, armClient: ArmClient) {
+async function back(motionClient: MotionClient, armClient: ArmClient, moveDistance: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
@@ -399,7 +401,7 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
   await motionClient.move(backPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function right(motionClient: MotionClient, armClient: ArmClient) {
+async function right(motionClient: MotionClient, armClient: ArmClient, moveDistance: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   //Create a WorldState that has Geometries in Frame included 
@@ -435,7 +437,7 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
   await motionClient.move(rightPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
-async function left(motionClient: MotionClient, armClient: ArmClient) {
+async function left(motionClient: MotionClient, armClient: ArmClient, moveDistance: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
   
   //Create a WorldState that has Geometries in Frame included 
@@ -653,10 +655,10 @@ async function main() {
     }
   };
 
-  async function forwardHandler() {
+  async function forwardHandler(moveDistance: number = minMoveDistance) {
     try {
-      await back(motionClient, armClient);
-      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
+      await back(motionClient, armClient, moveDistance);
+      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler(moveDistance + moveAccel)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -897,10 +899,10 @@ async function main() {
     return true
   }
 
-  async function backHandler() {
+  async function backHandler(moveDistance: number = minMoveDistance) {
     try {
-      await forward(motionClient, armClient);
-      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
+      await forward(motionClient, armClient, moveDistance);
+      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler(moveDistance + moveAccel)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -933,10 +935,10 @@ async function main() {
     }
   };
 
-  async function rightHandler() {
+  async function rightHandler(moveDistance: number = minMoveDistance) {
     try {
-      await right(motionClient, armClient);
-      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
+      await right(motionClient, armClient, moveDistance);
+      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler(moveDistance + moveAccel)};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -969,10 +971,10 @@ async function main() {
     }
   };
 
-  async function leftHandler() {
+  async function leftHandler(moveDistance: number = minMoveDistance) {
     try {
-      await left(motionClient, armClient);
-      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
+      await left(motionClient, armClient, moveDistance);
+      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler(moveDistance + moveAccel)};
     } catch (error) {
       console.log(error);
       styleMove('error')
