@@ -25,6 +25,8 @@ let gridPositions = {
 }
 // if this is set to true, we calculate based on enclosure geometry
 const useQuandrantMath = true
+// random animations will show on move if set to true
+const useAnimations = false
 
 const myResourceName: ResourceName = {
   namespace: 'rdk', 
@@ -137,19 +139,16 @@ let leftWallObject: SDK.Geometry ={
 }
 
 async function connect() {
-  //This is where you will list your robot secret. You can find this information
-  //in your Code Sample tab on your robot page. Check the Typescript code sample 
-  //to get started. :)  
   const secret = robotSecret;
   const credential = {
     payload: secret,
     type: 'robot-location-secret',
   };
 
-  //This is the host address of the main part of your robot.
+  // This is the host address of the main part of your robot.
   const host = robotLocation;
 
-  //This is the signaling address of your robot. 
+  // This is the signaling address of your robot. Typically this would not need to be modified.
   const signalingAddress = 'https://app.viam.com:443';
 
   const iceServers = [{ urls: 'stun:global.stun.twilio.com:3478' }];
@@ -225,7 +224,7 @@ let constraints: Constraints = {
   orientationConstraintList: [
     {orientationToleranceDegs: 5},
   ],
-  linearConstraintList: [], // {lineToleranceMm: 50, orientationToleranceDegs: 10}
+  linearConstraintList: [],
   collisionSpecificationList: [],
 };
 
@@ -557,28 +556,23 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
 
 async function grab(boardClient: BoardClient) {
   try {
-    //grabbutton().disabled = true;
-
     console.log(await boardClient.getGPIO(grabberPin));
     console.log('i`m grabbin');
     await boardClient.setGPIO(grabberPin, true);
     
    
   } finally {
-    //grabbutton().disabled = false;
+
   }
 }
 
 async function release(boardClient: BoardClient) {
   try {
-   // grabbutton().disabled = true;
-
     console.log(await boardClient.getGPIO(grabberPin));
     await boardClient.setGPIO(grabberPin, false);
     await delay(1000);
     console.log('i let go now');
   } finally {
-    //grabbutton().disabled = false;
   }
 }
 
@@ -612,10 +606,12 @@ async function main() {
       element.classList.remove('grid-container-ready')
       element.classList.add('grid-container-moving')
       // randomly animate
-      let rand = Math.floor(Math.random() * 50) + 1
-      if (rand < 20) {
-        document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
-        document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+      if (useAnimations) {
+        let rand = Math.floor(Math.random() * 50) + 1
+        if (rand < 20) {
+          document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+          document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+        }
       }
     } else if (state === 'ready') {
       element.classList.remove('grid-container-error')
