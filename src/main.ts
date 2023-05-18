@@ -12,7 +12,7 @@ const moveHeight = 500
 const gridSize = 3
 const reachMm = 560
 // if we mount the arm straight we don't need this
-const offset = 90
+const offset = 0
 const quadrantSize = (reachMm*2)/gridSize
 let gridPositions = {
   '1,1' : {x :270, y: 450}, 
@@ -24,7 +24,7 @@ let gridPositions = {
   '0,-1': {x: 0, y: -373}
 }
 // if this is set to true, we calculate based on enclosure geometry
-const useQuandrantMath = false
+const useQuandrantMath = true
 
 const myResourceName: ResourceName = {
   namespace: 'rdk', 
@@ -39,32 +39,32 @@ const myResourceName: ResourceName = {
 const holeObject: SDK.Geometry = {
   center: {
     x: 470, 
-    y: 120, 
+    y: 30, 
     z: 0, 
     oX: 0, 
     oY: 0, 
     oZ: 1, 
-    theta: 15
+    theta: 0
   }, 
   box: {
     dimsMm: {
-      x: 260, 
+      x: 250, 
       y: 360, 
       z: 140
     }
-  }, 
+  },
   label: ""
 }
 
 let frontWallObject: SDK.Geometry ={
   center: {
-    x: reachMm,
+    x: 600,
     y: 0,
     z: 0,
-    theta: 15,
     oX: 0,
     oY: 0,
     oZ: 1,
+    theta: 0,
   }, 
   box: {
     dimsMm: {
@@ -78,13 +78,13 @@ let frontWallObject: SDK.Geometry ={
 
 let backWallObject: SDK.Geometry ={
   center: {
-    x: reachMm,
+    x: -660,
     y: 0,
     z: 0,
-    theta: 15,
     oX: 0,
     oY: 0,
     oZ: 1,
+    theta: 0,
   }, 
   box: {
     dimsMm: {
@@ -101,10 +101,10 @@ let rightWallObject: SDK.Geometry ={
     x: 0,
     y: 700,
     z: 0,
-    theta: 105,
     oX: 0,
     oY: 0,
     oZ: 1,
+    theta: 90,
   }, 
   box: {
     dimsMm: {
@@ -119,12 +119,12 @@ let rightWallObject: SDK.Geometry ={
 let leftWallObject: SDK.Geometry ={
   center: {
     x: 0,
-    y: 550,
+    y: -680,
     z: 0,
-    theta: 105,
     oX: 0,
     oY: 0,
     oZ: 1,
+    theta: 90,
   }, 
   box: {
     dimsMm: {
@@ -135,7 +135,6 @@ let leftWallObject: SDK.Geometry ={
   },
   label: '',
 }
-
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
@@ -226,7 +225,7 @@ let constraints: Constraints = {
   orientationConstraintList: [
     {orientationToleranceDegs: 5},
   ],
-  linearConstraintList: [],
+  linearConstraintList: [], // {lineToleranceMm: 50, orientationToleranceDegs: 10}
   collisionSpecificationList: [],
 };
 
@@ -247,7 +246,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   // home position - where ball should be dropped and each game starts
   let home_pose: SDK.Pose = {
     x: 390,
-    y: 105,
+    y: 10,
     z: moveHeight,
     theta: 0,
     oX: 0,
@@ -342,7 +341,7 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
   }
 
   //Get current position of the arm 
-  console.log('im trying to print the current position')
+  console.log('im trying to print the current position!')
   let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let forwardPose: Pose = {
@@ -360,6 +359,7 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
     pose: forwardPose
   }
 
+  console.log(JSON.stringify(forwardPoseInFrame))
   await motionClient.move(forwardPoseInFrame, myResourceName, myWorldState, constraints)
 }
 
@@ -497,7 +497,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
     theta: 0,
     oX: 0,
     oY: 0,
-    oZ: currentPosition.pose!.oZ
+    oZ: -1
   };
 
   let dropPoseInFrame: SDK.PoseInFrame ={
@@ -540,7 +540,7 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
     theta: 0,
     oX: 0,
     oY: 0,
-    oZ: currentPosition.pose!.oZ
+    oZ: -1
   };
 
   let upPoseInFrame: SDK.PoseInFrame ={
