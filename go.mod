@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/edaniels/golog v0.0.0-20230215213219-28954395e8d0
-	github.com/golang/geo v0.0.0-20230421003525-6adc56603217
+	github.com/pkg/errors v0.9.1
 	github.com/viamrobotics/visualization v0.0.0-20230519201004-1f8b50316fa3
 	go.viam.com/rdk v0.2.48
 	go.viam.com/utils v0.1.33
@@ -42,6 +42,7 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -91,7 +92,6 @@ require (
 	github.com/pion/transport/v2 v2.2.1 // indirect
 	github.com/pion/turn/v2 v2.1.0 // indirect
 	github.com/pion/webrtc/v3 v3.2.5 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rs/cors v1.9.0 // indirect

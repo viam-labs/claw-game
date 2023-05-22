@@ -9,11 +9,11 @@ import (
 	"github.com/edaniels/golog"
 	"github.com/pkg/errors"
 	"github.com/viamrobotics/visualization"
-	"go.viam.com/rdk/components/arm"
-	"go.viam.com/rdk/components/arm/xarm"
 	"go.viam.com/rdk/referenceframe"
 	"go.viam.com/rdk/robot/client"
 	"go.viam.com/rdk/spatialmath"
+	"go.viam.com/rdk/components/arm"
+	"go.viam.com/rdk/components/arm/xarm"
 	"go.viam.com/rdk/utils"
 	"go.viam.com/utils/rpc"
 )
@@ -21,8 +21,8 @@ import (
 var (
 	logger = golog.NewDevelopmentLogger("client")
 
-	address = flag.String("address", "", "robot address found on app.viam.com")
-	payload = flag.String("payload", "", "robot payload found on app.viam.com")
+	location = flag.String("location", "", "robot address found on app.viam.com")
+	secret   = flag.String("secret", "", "robot secret for given address found on app.viam.com")
 )
 
 func main() {
@@ -63,11 +63,11 @@ func connect(ctx context.Context) *client.RobotClient {
 	flag.Parse()
 	robot, err := client.New(
 		ctx,
-		*address,
+		*location,
 		logger,
 		client.WithDialOptions(rpc.WithCredentials(rpc.Credentials{
 			Type:    utils.CredentialsTypeRobotLocationSecret,
-			Payload: *payload,
+			Payload: *secret,
 		})),
 	)
 	if err != nil {
@@ -92,7 +92,6 @@ func getWorldState() (*referenceframe.WorldState, error) {
 		if err != nil {
 			return nil, err
 		}
-		logger.Info(geometry.Pose().Orientation().OrientationVectorDegrees())
 		obstacles = append(obstacles, geometry)
 	}
 	return referenceframe.NewWorldState(

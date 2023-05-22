@@ -84,8 +84,7 @@ async function connect() {
   // This is the host address of the main part of your robot.
   const host = robotLocation;
 
-  // This is the signaling address of your robot. Typically this would not 
-need to be modified.
+  // This is the signaling address of your robot. Typically this would not need to be modified.
   const signalingAddress = 'https://app.viam.com:443';
 
   const iceServers = [{ urls: 'stun:global.stun.twilio.com:3478' }];
@@ -328,13 +327,11 @@ constraints)
 }
 
 async function left(motionClient: MotionClient, armClient: ArmClient) {
-  if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too 
-fast!"); return }
+  if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
 
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let leftPose: Pose = {
     x: currentPosition.pose!.x,
@@ -360,8 +357,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient)
   if (ignoreInterrupts && await armClient.isMoving()) { return }
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   let dropPose: Pose = {
@@ -476,10 +472,8 @@ async function main() {
       if (useAnimations) {
         let rand = Math.floor(Math.random() * 50) + 1
         if (rand < 20) {
-          document.getElementById('animate-left').style.backgroundImage = 
-"url(images/animate/animate" + rand + ".webp)"
-          document.getElementById('animate-right').style.backgroundImage = 
-"url(images/animate/animate" + rand + ".webp)"
+          document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+          document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
         }
       }
     } else if (state === 'ready') {
@@ -521,8 +515,7 @@ async function main() {
   async function forwardHandler() {
     try {
       await back(motionClient, armClient);
-      if (forwardbutton().classList.contains('custom-box-shadow-active')) 
-{await forwardHandler()};
+      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -766,8 +759,7 @@ async function main() {
   async function backHandler() {
     try {
       await forward(motionClient, armClient);
-      if (backbutton().classList.contains('custom-box-shadow-active')) 
-{await backHandler()};
+      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -803,8 +795,7 @@ async function main() {
   async function rightHandler() {
     try {
       await right(motionClient, armClient);
-      if (rightbutton().classList.contains('custom-box-shadow-active')) 
-{await rightHandler()};
+      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
     } catch (error) {
       console.log(error);
       styleMove('error')
@@ -840,8 +831,7 @@ async function main() {
   async function leftHandler() {
     try {
       await left(motionClient, armClient);
-      if (leftbutton().classList.contains('custom-box-shadow-active')) 
-{await leftHandler()};
+      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
     } catch (error) {
       console.log(error);
       styleMove('error')
