@@ -100,7 +100,6 @@ async function connect() {
 
 function forwardbutton() {
   return <HTMLTableCellElement>document.getElementById('forward-button');
-
 }
 
 function backbutton() {
@@ -184,8 +183,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  await motionClient.move(home_pose_in_frame, myResourceName, 
-myWorldState, constraints)
+  await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
 }
 
 async function moveToQuadrant(motionClient: MotionClient, armClient: 
@@ -237,182 +235,63 @@ ArmClient, x: number, y: number) {
     }
   
     try {       
-      await motionClient.move(new_pose_in_frame, myResourceName, 
-myWorldState, constraints)
+      await motionClient.move(new_pose_in_frame, myResourceName, myWorldState, constraints)
     } finally {
       //homebutton().disabled = false;
     }
 }
 
-async function forward(motionClient: MotionClient, armClient: ArmClient) {
+async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDist: number, yDist: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Get current position of the arm 
-  console.log('im trying to print the current position!')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
+  // Get current position of the arm 
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
-  let forwardPose: Pose = {
-    x: currentPosition.pose!.x + moveDistance,
-    y: currentPosition.pose!.y,
+
+  // Calculate new position
+  let pose: Pose = {
+    x: currentPosition.pose!.x + xDist,
+    y: currentPosition.pose!.y + yDist,
     z: currentPosition.pose!.z,
     theta: 0,
     oX: 0,
     oY: 0, 
     oZ: -1
   };
-
-  let forwardPoseInFrame: SDK.PoseInFrame ={
+  let pif: SDK.PoseInFrame ={
     referenceFrame: "world", 
-    pose: forwardPose
+    pose: pose
   }
 
-  console.log(JSON.stringify(forwardPoseInFrame))
-  await motionClient.move(forwardPoseInFrame, myResourceName, 
-myWorldState, constraints)
+  // Move to new position
+  console.log('moving to:' + JSON.stringify(pif))
+  await motionClient.move(pif, myResourceName, myWorldState, constraints)
 }
 
-async function back(motionClient: MotionClient, armClient: ArmClient) {
+async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
-
-  //Get current position of the arm 
-  console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
-  console.log('current position:' + JSON.stringify(currentPosition))
-  let backPose: Pose = {
-    x: currentPosition.pose!.x -moveDistance,
-    y: currentPosition.pose!.y,
-    z: currentPosition.pose!.z,
-    theta: 0,
-    oX: 0,
-    oY: 0,
-    oZ: -1
-  };
-
-  let backPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
-    pose: backPose
-  }
-
-  await motionClient.move(backPoseInFrame, myResourceName, myWorldState, 
-constraints)
-}
-
-async function right(motionClient: MotionClient, armClient: ArmClient) {
-  if (ignoreInterrupts && await armClient.isMoving()) { return }
-
-  //Get current position of the arm 
-  console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
-  console.log('current position:' + JSON.stringify(currentPosition))
-  let rightPose: Pose = {
-    x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y + moveDistance,
-    z: currentPosition.pose!.z,
-    theta: 0,
-    oX: 0,
-    oY: 0,
-    oZ: -1
-  };
-
-  let rightPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
-    pose: rightPose
-  }
-
-  await motionClient.move(rightPoseInFrame, myResourceName, myWorldState, 
-constraints)
-}
-
-async function left(motionClient: MotionClient, armClient: ArmClient) {
-  if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
-
-  //Get current position of the arm 
-  console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
-  console.log('current position:' + JSON.stringify(currentPosition))
-  let leftPose: Pose = {
-    x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y - moveDistance,
-    z: currentPosition.pose!.z,
-    theta: 0,
-    oX: 0,
-    oY: 0,
-    oZ: -1
-  };
-
-  let leftPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
-    pose: leftPose
-  }
-
-  await motionClient.move(leftPoseInFrame, myResourceName, myWorldState, 
-constraints)
-}
-
-async function dropDown(motionClient: MotionClient, armClient: ArmClient) 
-{
-  if (ignoreInterrupts && await armClient.isMoving()) { return }
-  //Get current position of the arm 
-  console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
-  console.log('current position:' + JSON.stringify(currentPosition))
-
-  let dropPose: Pose = {
-    x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y,
-    z: 240,
-    theta: 0,
-    oX: 0,
-    oY: 0,
-    oZ: -1
-  };
-
-  let dropPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
-    pose: dropPose
-  }
-
-  //Drop the claw down
-  console.log('im about to drop to' + JSON.stringify(dropPoseInFrame))
-  await motionClient.move(dropPoseInFrame, myResourceName, myWorldState, 
-constraints)
-  console.log('dropped')
-
-}
-
-async function up(motionClient: MotionClient, armClient: ArmClient) {
-  if (ignoreInterrupts && await armClient.isMoving()) { return }
-  //Get current position of the arm 
-  console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 
-'world', [])
-  console.log('current position:' + JSON.stringify(currentPosition))
-
   
-  let upPose: Pose = {
+  // Get current position of the arm 
+  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  console.log('current position:' + JSON.stringify(currentPosition))
+
+  let pose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
-    z: moveHeight,
+    z: zHeight,
     theta: 0,
     oX: 0,
     oY: 0,
     oZ: -1
   };
-
-  let upPoseInFrame: SDK.PoseInFrame ={
+  let pif: SDK.PoseInFrame ={
     referenceFrame: "world", 
-    pose: upPose
+    pose: pose
   }
 
-  //Pick the claw up 
-  console.log('let`s go up')
-  await motionClient.move(upPoseInFrame, myResourceName, myWorldState, 
-constraints)
-  console.log('up!')
-
+  // Move to new position
+  console.log('moving in Z direction to:' + JSON.stringify(pif))
+  await motionClient.move(pif, myResourceName, myWorldState, constraints)
 }
 
 async function grab(boardClient: BoardClient) {
@@ -514,7 +393,7 @@ async function main() {
 
   async function forwardHandler() {
     try {
-      await back(motionClient, armClient);
+      await inPlaneMove(motionClient, armClient, -moveDistance, 0);
       if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
     } catch (error) {
       console.log(error);
@@ -758,7 +637,7 @@ async function main() {
 
   async function backHandler() {
     try {
-      await forward(motionClient, armClient);
+      await inPlaneMove(motionClient, armClient, moveDistance, 0);
       if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
     } catch (error) {
       console.log(error);
@@ -794,7 +673,7 @@ async function main() {
 
   async function rightHandler() {
     try {
-      await right(motionClient, armClient);
+      await inPlaneMove(motionClient, armClient, 0, moveDistance);
       if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
     } catch (error) {
       console.log(error);
@@ -830,7 +709,7 @@ async function main() {
 
   async function leftHandler() {
     try {
-      await left(motionClient, armClient);
+      await inPlaneMove(motionClient, armClient, 0, -moveDistance);
       if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
     } catch (error) {
       console.log(error);
@@ -866,10 +745,10 @@ async function main() {
 
   async function dropHandler() {
     try {
-      await dropDown(motionClient, armClient);
+      await zMove(motionClient, armClient, 240);
       await grab(boardClient);
       await delay(1000);
-      await up(motionClient, armClient);
+      await zMove(motionClient, armClient, moveHeight);
       await home(motionClient, armClient);
       await delay(1000);
       await release(boardClient);
