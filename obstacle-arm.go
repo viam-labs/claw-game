@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 
 	"github.com/edaniels/golog"
@@ -17,26 +18,57 @@ import (
 )
 
 func main() {
-	logger := golog.NewDevelopmentLogger("client")
 	ctx := context.Background()
+	robot := connect(ctx)
+	defer robot.Close(context.Background())
+
+	worldState := getWorldState()
+
+	// get arm from robot
+	xArm, err := arm.FromRobot(robot, "myArm")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//visualize worldstate + robot
+	model, _ := xarm.MakeModelFrame("test", "xArm6")
+	jPos, _ := xArm.JointPositions(ctx, nil)
+	conv1 := referenceframe.JointPositionsToRadians(jPos)
+	conv2 := referenceframe.FloatsToInputs(conv1)
+	fs := referenceframe.NewEmptyFrameSystem("")
+	fs.AddFrame(model, fs.World())
+	inputs := referenceframe.StartPositions(fs)
+	inputs[model.Name()] = conv2
+	visualization.VisualizeScene(fs, inputs, worldState)
+
+	// close the connection
+	robot.Close(ctx)
+}
+
+func connect(ctx context.Context) *client.RobotClient {
+	address := flag.String("address", "", "robot address found on app.viam.com")
+	payload := flag.String("payload", "", "robot payload found on app.viam.com")
+	flag.Parse()
+	
+	logger := golog.NewDevelopmentLogger("client")
 	robot, err := client.New(
 		ctx,
-		"replace with location",
+		*address,
 		logger,
 		client.WithDialOptions(rpc.WithCredentials(rpc.Credentials{
 			Type:    utils.CredentialsTypeRobotLocationSecret,
-			Payload: "replace with secret",
+			Payload: *payload,
 		})),
 	)
 	if err != nil {
 		logger.Fatal(err)
 	}
+	logger.Infof("Resources: %q", robot.ResourceNames())
+	return robot
+}
 
+func getWorldState() *referenceframe.WorldState {
 	obstacles := []spatialmath.Geometry{}
-
-	defer robot.Close(context.Background())
-	logger.Info("Resources:")
-	logger.Info(robot.ResourceNames())
 
 	//front wall
 	frontWallName := "frontWall"
@@ -102,26 +134,6 @@ func main() {
 
 	// add obstacles to worldstate
 	obstaclesInFrame := referenceframe.NewGeometriesInFrame(referenceframe.World, obstacles)
-	worldState := &referenceframe.WorldState{
-		Obstacles: []*referenceframe.GeometriesInFrame{obstaclesInFrame},
-	}
-
-	// get arm from robot
-	xArm, err := arm.FromRobot(robot, "planning:myArm")
-	if err != nil {
-		fmt.Println(err)
-	}
-	//visualize worldstate + robot
-	model, _ := xarm.Model("test", "xArm6")
-	jPos, _ := xArm.JointPositions(ctx, nil)
-	conv1 := referenceframe.JointPositionsToRadians(jPos)
-	conv2 := referenceframe.FloatsToInputs(conv1)
-	fs := referenceframe.NewEmptySimpleFrameSystem("")
-	fs.AddFrame(model, fs.World())
-	inputs := referenceframe.StartPositions(fs)
-	inputs[model.Name()] = conv2
-	visualization.VisualizeScene(fs, inputs, worldState)
-
-	// close the connection
-	robot.Close(ctx)
+	worldState, _ := referenceframe.NewWorldState([]*referenceframe.GeometriesInFrame{obstaclesInFrame}, nil)
+	return worldState
 }
