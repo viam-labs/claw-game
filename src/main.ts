@@ -146,8 +146,7 @@ function gridHome() {
 }
 
 function gridFrontRight() {
-  return 
-<HTMLTableCellElement>document.getElementById('grid-front-right');
+  return <HTMLTableCellElement>document.getElementById('grid-front-right');
 }
 
 //Creating a delay function for timing 
@@ -258,7 +257,7 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
     oY: 0, 
     oZ: -1
   };
-  let pif: SDK.PoseInFrame ={
+  let pif: SDK.PoseInFrame = {
     referenceFrame: "world", 
     pose: pose
   }
@@ -368,28 +367,46 @@ async function main() {
     }
   }
 
-  forwardbutton().ontouchstart = async () => {
+  async function quadrantMoveHandler(x,y) {
+    try {
+      await moveToQuadrant(motionClient, armClient, x, y);
+    } catch (error) {
+      console.log(error);
+      styleMove('error')
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
+      return false
+    }
+    return true
+  }
+  
+  async function mouseDown(func: Promise<boolean>) {
+    if (isMoving) return
+    if (useTouch) return
+    styleMove('move')
+    isMoving = true
+    let success = await func
+    if (success) {
+      styleMove('ready')
+      isMoving = false
+    }
+  };
+  
+  async function touchStart(func: Promise<boolean>) {
     if (isMoving) return
     styleMove('move')
     isMoving = true
     useTouch = true
-    let success = await forwardHandler()
+    let success = await func
     if (success) {
       styleMove('ready')
       isMoving = false
     }
   };
-  forwardbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await forwardHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  
+  // forward
+  forwardbutton().onmousedown = async () => {mouseDown(forwardHandler())};
+  forwardbutton().ontouchstart = async () => {touchStart(forwardHandler())};
+
 
   async function forwardHandler() {
     try {
@@ -404,166 +421,38 @@ async function main() {
     return true
   }
 
-  backbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await backHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  backbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await backHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // backward
+  backbutton().onmousedown = async () => {mouseDown(backHandler())};
+  backbutton().ontouchstart = async () => {touchStart(backHandler())};
 
-  gridBackLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBackLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // -1, -1
+  gridBackLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, -1))};
+  gridBackLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, -1))};
 
-  gridBack().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,0)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBack().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,0)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // -1, 0
+  gridBack().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, 0))};
+  gridBack().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, 0))};
 
-  gridBackRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(-1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridBackRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(-1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // -1, 1
+  gridBackRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, 1))};
+  gridBackRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, 1))};
 
-  gridLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(0,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(0,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // 0, -1
+  gridLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(0, -1))};
+  gridLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(0, -1))};
 
-  gridRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(0,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(0,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // 0, 1
+  gridRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(0, 1))};
+  gridRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(0, 1))};
 
-  gridFrontLeft().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridFrontLeft().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(1,-1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  // 1, -1
+  gridFrontLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(1, -1))};
+  gridFrontLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(1, -1))};
+
+  // 1, 1
+  gridFrontRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(1, 1))};
+  gridFrontRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(1, 1))};
+
 
   gridHome().onmousedown = async () => {
     if (isMoving) return
@@ -600,40 +489,6 @@ async function main() {
     return true
   }
 
-  gridFrontRight().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await quadrantMoveHander(1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  gridFrontRight().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await quadrantMoveHander(1,1)
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  async function quadrantMoveHander(x,y) {
-    try {
-      await moveToQuadrant(motionClient, armClient, x, y);
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
 
   async function backHandler() {
     try {
@@ -648,28 +503,8 @@ async function main() {
     return true
   }
 
-  rightbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await rightHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  rightbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await rightHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  rightbutton().onmousedown = async () => {mouseDown(rightHandler())};
+  rightbutton().ontouchstart = async () => {touchStart(rightHandler())};
 
   async function rightHandler() {
     try {
@@ -684,28 +519,8 @@ async function main() {
     return true
   }
 
-  leftbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await leftHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  leftbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true;
-    let success = await leftHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  leftbutton().onmousedown = async () => {mouseDown(leftHandler())};
+  leftbutton().ontouchstart = async () => {touchStart(leftHandler())};
 
   async function leftHandler() {
     try {
@@ -720,28 +535,8 @@ async function main() {
     return true
   }
 
-  dropbutton().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    isMoving = true
-    styleMove('move')
-    let success = await dropHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  dropbutton().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true;
-    let success = await dropHandler()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
+  dropbutton().onmousedown = async () => {mouseDown(dropHandler())};
+  dropbutton().ontouchstart = async () => {touchStart(dropHandler())};
 
   async function dropHandler() {
     try {
