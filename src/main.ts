@@ -50,6 +50,8 @@ const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
 const reachMm = 560
+const moveTimeout = 3000
+
 // if we mount the arm straight we don't need this
 const offset = 0
 const quadrantSize = (reachMm*2)/gridSize
@@ -64,10 +66,11 @@ let gridPositions = {
 }
 // if this is set to true, we calculate based on enclosure geometry
 const useQuandrantMath = true
+
 // random animations will show on move if set to true
 const useAnimations = false
 
-const myResourceName: ResourceName = {
+const armName: ResourceName = {
   namespace: 'rdk', 
   type: 'component', 
   subtype: 'arm', 
@@ -98,62 +101,10 @@ async function connect() {
   });
 }
 
-function forwardbutton() {
-  return <HTMLTableCellElement>document.getElementById('forward-button');
-}
-
-function backbutton() {
-  return <HTMLTableCellElement>document.getElementById('back-button');
-}
-
-function rightbutton() {
-  return <HTMLTableCellElement>document.getElementById('right-button');
-}
-
-function leftbutton() {
-  return <HTMLTableCellElement>document.getElementById('left-button');
-}
-
-function dropbutton() {
-  return <HTMLTableCellElement>document.getElementById('drop-button');
-}
-
-function gridBackLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-back-left');
-}
-
-function gridBack() {
-  return <HTMLTableCellElement>document.getElementById('grid-back');
-}
-
-function gridBackRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-back-right');
-}
-
-function gridLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-left');
-}
-function gridRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-right');
-}
-
-function gridFrontLeft() {
-  return <HTMLTableCellElement>document.getElementById('grid-front-left');
-}
-
-function gridHome() {
-  return <HTMLTableCellElement>document.getElementById('grid-home');
-}
-
-function gridFrontRight() {
-  return <HTMLTableCellElement>document.getElementById('grid-front-right');
-}
-
 //Creating a delay function for timing 
-function delay(time) {
+function delay(time: number) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
-
 
 let constraints: Constraints = {
   orientationConstraintList: [
@@ -182,11 +133,10 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
+  await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
 }
 
-async function moveToQuadrant(motionClient: MotionClient, armClient: 
-ArmClient, x: number, y: number) {
+async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, x: number, y: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
     let pose: SDK.Pose = {
       x: 390,
@@ -234,9 +184,9 @@ ArmClient, x: number, y: number) {
     }
   
     try {       
-      await motionClient.move(new_pose_in_frame, myResourceName, myWorldState, constraints)
+      await motionClient.move(new_pose_in_frame, armName, myWorldState, constraints)
     } finally {
-      //homebutton().disabled = false;
+      // homebutton().disabled = false;
     }
 }
 
@@ -244,7 +194,7 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
   // Get current position of the arm 
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   // Calculate new position
@@ -264,14 +214,14 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
 
   // Move to new position
   console.log('moving to:' + JSON.stringify(pif))
-  await motionClient.move(pif, myResourceName, myWorldState, constraints)
+  await motionClient.move(pif, armName, myWorldState, constraints)
 }
 
 async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
   
   // Get current position of the arm 
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   let pose: Pose = {
@@ -290,7 +240,7 @@ async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: 
 
   // Move to new position
   console.log('moving in Z direction to:' + JSON.stringify(pif))
-  await motionClient.move(pif, myResourceName, myWorldState, constraints)
+  await motionClient.move(pif, armName, myWorldState, constraints)
 }
 
 async function grab(boardClient: BoardClient) {
@@ -316,8 +266,6 @@ async function release(boardClient: BoardClient) {
 }
 
 async function main() {
-  console.log("hello there")
-  console.log('myWorldState:', myWorldState);
   // Connect to client
   let client: Client;  
   try {
@@ -367,18 +315,7 @@ async function main() {
     }
   }
 
-  async function quadrantMoveHandler(x,y) {
-    try {
-      await moveToQuadrant(motionClient, armClient, x, y);
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
-  
+  // Helper functions to define button behavior
   async function mouseDown(func: Promise<boolean>) {
     if (isMoving) return
     if (useTouch) return
@@ -390,7 +327,7 @@ async function main() {
       isMoving = false
     }
   };
-  
+
   async function touchStart(func: Promise<boolean>) {
     if (isMoving) return
     styleMove('move')
@@ -403,141 +340,68 @@ async function main() {
     }
   };
   
-  // forward
-  forwardbutton().onmousedown = async () => {mouseDown(forwardHandler())};
-  forwardbutton().ontouchstart = async () => {touchStart(forwardHandler())};
+  function setButtonBehavior(button: HTMLTableCellElement, func: Promise<boolean>) {
+    button.onmousedown = async () => {mouseDown(func)}; 
+    button.onmousedown = async () => {touchStart(func)};
+  }
 
 
-  async function forwardHandler() {
+  // Define buttons for imcremental movement in plane
+  async function planarMoveHandler(button: HTMLTableCellElement, x:number, y: number) {
     try {
-      await inPlaneMove(motionClient, armClient, -moveDistance, 0);
-      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
+      await inPlaneMove(motionClient, armClient, x, y);
+      if (button.classList.contains('custom-box-shadow-active')) {await planarMoveHandler(button, x, y)};
     } catch (error) {
       console.log(error);
       styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, moveTimeout)
       return false
     }
     return true
-  }
-
-  // backward
-  backbutton().onmousedown = async () => {mouseDown(backHandler())};
-  backbutton().ontouchstart = async () => {touchStart(backHandler())};
-
-  // -1, -1
-  gridBackLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, -1))};
-  gridBackLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, -1))};
-
-  // -1, 0
-  gridBack().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, 0))};
-  gridBack().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, 0))};
-
-  // -1, 1
-  gridBackRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(-1, 1))};
-  gridBackRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(-1, 1))};
-
-  // 0, -1
-  gridLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(0, -1))};
-  gridLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(0, -1))};
-
-  // 0, 1
-  gridRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(0, 1))};
-  gridRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(0, 1))};
-
-  // 1, -1
-  gridFrontLeft().onmousedown = async () => {mouseDown(quadrantMoveHandler(1, -1))};
-  gridFrontLeft().ontouchstart = async () => {touchStart(quadrantMoveHandler(1, -1))};
-
-  // 1, 1
-  gridFrontRight().onmousedown = async () => {mouseDown(quadrantMoveHandler(1, 1))};
-  gridFrontRight().ontouchstart = async () => {touchStart(quadrantMoveHandler(1, 1))};
-
-
-  gridHome().onmousedown = async () => {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await homeHandler();
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
   };
-  gridHome().ontouchstart = async () => {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await homeHandler();
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-  
-  async function homeHandler() {
+
+  const forwardbutton = <HTMLTableCellElement>document.getElementById('forward-button');
+  const backbutton = <HTMLTableCellElement>document.getElementById('back-button');
+  const rightbutton = <HTMLTableCellElement>document.getElementById('right-button');
+  const leftbutton = <HTMLTableCellElement>document.getElementById('left-button');
+
+  setButtonBehavior(forwardbutton, planarMoveHandler(forwardbutton, -moveDistance, 0));
+  setButtonBehavior(backbutton, planarMoveHandler(backbutton, moveDistance, 0));
+  setButtonBehavior(rightbutton, planarMoveHandler(rightbutton, 0, moveDistance));
+  setButtonBehavior(leftbutton, planarMoveHandler(leftbutton, 0, -moveDistance));
+
+  // Define buttons for movement between quadrants
+  async function moveHandler(func: Promise<void>) {
     try {
-      await home(motionClient, armClient);
+      await func;
     } catch (error) {
       console.log(error);
       styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
+      setTimeout( () => { styleMove('ready'); isMoving = false; }, moveTimeout)
       return false
     }
     return true
   }
 
+  const gridBackLeft = <HTMLTableCellElement>document.getElementById('grid-back-left');
+  const gridBack = <HTMLTableCellElement>document.getElementById('grid-back');
+  const gridBackRight = <HTMLTableCellElement>document.getElementById('grid-back-right');
+  const gridLeft = <HTMLTableCellElement>document.getElementById('grid-left');
+  const gridHome = <HTMLTableCellElement>document.getElementById('grid-home');
+  const gridRight = <HTMLTableCellElement>document.getElementById('grid-right');
+  const gridFrontLeft = <HTMLTableCellElement>document.getElementById('grid-front-left');
+  const gridFrontRight = <HTMLTableCellElement>document.getElementById('grid-front-right');
 
-  async function backHandler() {
-    try {
-      await inPlaneMove(motionClient, armClient, moveDistance, 0);
-      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
+  setButtonBehavior(gridBackLeft, moveHandler(moveToQuadrant(motionClient, armClient, -1, -1)));
+  setButtonBehavior(gridBack, moveHandler(moveToQuadrant(motionClient, armClient, -1, 0)));
+  setButtonBehavior(gridBackRight, moveHandler(moveToQuadrant(motionClient, armClient, -1, 1)));
+  setButtonBehavior(gridLeft, moveHandler(moveToQuadrant(motionClient, armClient, 0, -1)));
+  setButtonBehavior(gridHome, moveHandler(home(motionClient, armClient)))
+  setButtonBehavior(gridRight, moveHandler(moveToQuadrant(motionClient, armClient, 0, 1)));
+  setButtonBehavior(gridFrontLeft,moveHandler(moveToQuadrant(motionClient, armClient, 1, -1)));
+  setButtonBehavior(gridFrontRight, moveHandler(moveToQuadrant(motionClient, armClient, 1, 1)));
 
-  rightbutton().onmousedown = async () => {mouseDown(rightHandler())};
-  rightbutton().ontouchstart = async () => {touchStart(rightHandler())};
-
-  async function rightHandler() {
-    try {
-      await inPlaneMove(motionClient, armClient, 0, moveDistance);
-      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
-
-  leftbutton().onmousedown = async () => {mouseDown(leftHandler())};
-  leftbutton().ontouchstart = async () => {touchStart(leftHandler())};
-
-  async function leftHandler() {
-    try {
-      await inPlaneMove(motionClient, armClient, 0, -moveDistance);
-      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 3000 )
-      return false
-    }
-    return true
-  }
-
-  dropbutton().onmousedown = async () => {mouseDown(dropHandler())};
-  dropbutton().ontouchstart = async () => {touchStart(dropHandler())};
-
+  // Define button to grab and return object
   async function dropHandler() {
     try {
       await zMove(motionClient, armClient, 240);
@@ -556,11 +420,16 @@ async function main() {
     return true
   }
 
-  forwardbutton().disabled = false;
-  backbutton().disabled = false;
-  rightbutton().disabled = false;
-  leftbutton().disabled = false;
-  dropbutton().disabled = false;
+  const dropbutton = <HTMLTableCellElement>document.getElementById('drop-button');
+  
+  setButtonBehavior(dropbutton, dropHandler());
+
+
+  forwardbutton.disabled = false;
+  backbutton.disabled = false;
+  rightbutton.disabled = false;
+  leftbutton.disabled = false;
+  dropbutton.disabled = false;
 }
 
 main();
