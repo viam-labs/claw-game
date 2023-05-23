@@ -3,7 +3,7 @@ StreamClient, commonApi } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
 import obstacles from '../obstacles.json';
-//import * as env from 'env';
+// import * as env from 'env';
 
 //console.log(env)
 
@@ -316,33 +316,33 @@ async function main() {
   }
 
   // Helper functions to define button behavior
-  async function mouseDown(func: Promise<boolean>) {
+  async function mouseDown(func: () => Promise<boolean>) {
     if (isMoving) return
     if (useTouch) return
     styleMove('move')
     isMoving = true
-    let success = await func
+    let success = await func()
     if (success) {
       styleMove('ready')
       isMoving = false
     }
   };
 
-  async function touchStart(func: Promise<boolean>) {
+  async function touchStart(func: () => Promise<boolean>) {
     if (isMoving) return
     styleMove('move')
     isMoving = true
     useTouch = true
-    let success = await func
+    let success = await func()
     if (success) {
       styleMove('ready')
       isMoving = false
     }
   };
   
-  function setButtonBehavior(button: HTMLTableCellElement, func: Promise<boolean>) {
+  function setButtonBehavior(button: HTMLTableCellElement, func: () => Promise<boolean>) {
     button.onmousedown = async () => {mouseDown(func)}; 
-    button.onmousedown = async () => {touchStart(func)};
+    button.ontouchstart = async () => {touchStart(func)};
   }
 
   // Define buttons for imcremental movement in plane
@@ -364,10 +364,10 @@ async function main() {
   const rightbutton = <HTMLTableCellElement>document.getElementById('right-button');
   const leftbutton = <HTMLTableCellElement>document.getElementById('left-button');
 
-  setButtonBehavior(forwardbutton, planarMoveHandler(forwardbutton, -moveDistance, 0));
-  setButtonBehavior(backbutton, planarMoveHandler(backbutton, moveDistance, 0));
-  setButtonBehavior(rightbutton, planarMoveHandler(rightbutton, 0, moveDistance));
-  setButtonBehavior(leftbutton, planarMoveHandler(leftbutton, 0, -moveDistance));
+  setButtonBehavior(forwardbutton, () => planarMoveHandler(forwardbutton, -moveDistance, 0));
+  setButtonBehavior(backbutton, () => planarMoveHandler(backbutton, moveDistance, 0));
+  setButtonBehavior(rightbutton, () => planarMoveHandler(rightbutton, 0, moveDistance));
+  setButtonBehavior(leftbutton, () => planarMoveHandler(leftbutton, 0, -moveDistance));
 
   // Define buttons for movement between quadrants
   async function moveHandler(func: Promise<void>) {
@@ -391,14 +391,14 @@ async function main() {
   const gridFrontLeft = <HTMLTableCellElement>document.getElementById('grid-front-left');
   const gridFrontRight = <HTMLTableCellElement>document.getElementById('grid-front-right');
 
-  setButtonBehavior(gridBackLeft, moveHandler(moveToQuadrant(motionClient, armClient, -1, -1)));
-  setButtonBehavior(gridBack, moveHandler(moveToQuadrant(motionClient, armClient, -1, 0)));
-  setButtonBehavior(gridBackRight, moveHandler(moveToQuadrant(motionClient, armClient, -1, 1)));
-  setButtonBehavior(gridLeft, moveHandler(moveToQuadrant(motionClient, armClient, 0, -1)));
-  setButtonBehavior(gridHome, moveHandler(home(motionClient, armClient)))
-  setButtonBehavior(gridRight, moveHandler(moveToQuadrant(motionClient, armClient, 0, 1)));
-  setButtonBehavior(gridFrontLeft,moveHandler(moveToQuadrant(motionClient, armClient, 1, -1)));
-  setButtonBehavior(gridFrontRight, moveHandler(moveToQuadrant(motionClient, armClient, 1, 1)));
+  setButtonBehavior(gridBackLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, -1)));
+  setButtonBehavior(gridBack, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, 0)));
+  setButtonBehavior(gridBackRight, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, 1)));
+  setButtonBehavior(gridLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, 0, -1)));
+  setButtonBehavior(gridHome, () => moveHandler(home(motionClient, armClient)))
+  setButtonBehavior(gridRight, () => moveHandler(moveToQuadrant(motionClient, armClient, 0, 1)));
+  setButtonBehavior(gridFrontLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, 1, -1)));
+  setButtonBehavior(gridFrontRight, () => moveHandler(moveToQuadrant(motionClient, armClient, 1, 1)));
 
   // Define button to grab and return object
   async function dropHandler() {
@@ -421,7 +421,7 @@ async function main() {
 
   const dropbutton = <HTMLTableCellElement>document.getElementById('drop-button');
   
-  setButtonBehavior(dropbutton, dropHandler());
+  setButtonBehavior(dropbutton, () => dropHandler());
 
 
   forwardbutton.disabled = false;

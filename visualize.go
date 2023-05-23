@@ -9,11 +9,11 @@ import (
 	"github.com/edaniels/golog"
 	"github.com/pkg/errors"
 	"github.com/viamrobotics/visualization"
+	"go.viam.com/rdk/components/arm"
+	"go.viam.com/rdk/components/arm/xarm"
 	"go.viam.com/rdk/referenceframe"
 	"go.viam.com/rdk/robot/client"
 	"go.viam.com/rdk/spatialmath"
-	"go.viam.com/rdk/components/arm"
-	"go.viam.com/rdk/components/arm/xarm"
 	"go.viam.com/rdk/utils"
 	"go.viam.com/utils/rpc"
 )
@@ -37,9 +37,9 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	// if err = visualization.VisualizeRobot(ctx, robot, worldState); err != nil {
-	// 	logger.Fatal(err)
-	// }
+	if err = visualization.VisualizeRobot(ctx, robot, worldState); err != nil {
+		logger.Fatal(err)
+	}
 
 	// get arm from robot
 	xArm, err := arm.FromRobot(robot, "myArm")
