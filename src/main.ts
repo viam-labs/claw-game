@@ -345,7 +345,6 @@ async function main() {
     button.onmousedown = async () => {touchStart(func)};
   }
 
-
   // Define buttons for imcremental movement in plane
   async function planarMoveHandler(button: HTMLTableCellElement, x:number, y: number) {
     try {
@@ -447,5 +446,3 @@ document.addEventListener('touchend', function (event) {
   }
   lastTouchEnd = now;
 }, false);
-
-
