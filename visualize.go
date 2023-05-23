@@ -37,10 +37,6 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	if err = visualization.VisualizeRobot(ctx, robot, worldState); err != nil {
-		logger.Fatal(err)
-	}
-
 	// get arm from robot
 	xArm, err := arm.FromRobot(robot, "myArm")
 	if err != nil {
