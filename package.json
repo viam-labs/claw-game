@@ -16,7 +16,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@viamrobotics/sdk": "^0.0.53",
+    "@viamrobotics/sdk": "^0.1.0",
     "autoprefixer": "^10.4.14",
     "nes.css": "^2.3.0",
     "postcss": "^8.4.23",

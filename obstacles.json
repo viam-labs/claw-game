@@ -1,0 +1,102 @@
+[
+    {
+        "label": "hole",
+        "translation": {
+            "x": 470, 
+            "y": 30, 
+            "z": 0
+        },
+        "orientation": {
+            "type": "ov_degrees",
+            "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1,
+                "th": 0
+            }
+        },
+        "x": 250, 
+        "y": 360, 
+        "z": 140
+    },
+    {
+        "label": "frontWall",
+        "translation": {
+            "x": 600, 
+            "y": 0, 
+            "z": 0
+        },
+        "orientation": {
+            "type": "ov_degrees",
+            "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1,
+                "th": 0
+            }
+        },
+        "x": 15, 
+        "y": 2000, 
+        "z": 1000
+    },
+    {
+        "label": "backWall",
+        "translation": {
+            "x": -660, 
+            "y": 0, 
+            "z": 0
+        },
+        "orientation": {
+            "type": "ov_degrees",
+            "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1,
+                "th": 0
+            }
+        },
+        "x": 15, 
+        "y": 2000, 
+        "z": 1000
+    },
+    {
+        "label": "rightWall",
+        "translation": {
+            "x": 0, 
+            "y": 700, 
+            "z": 0
+        },
+        "orientation": {
+            "type": "ov_degrees",
+            "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1,
+                "th": 90
+            }
+        },
+        "x": 15, 
+        "y": 2000, 
+        "z": 1000
+    },
+    {
+        "label": "leftWall",
+        "translation": {
+            "x": 0, 
+            "y": -680, 
+            "z": 0
+        },
+        "orientation": {
+            "type": "ov_degrees",
+            "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1,
+                "th": 90
+            }
+        },
+        "x": 15, 
+        "y": 2000, 
+        "z": 1000
+    }
+]
