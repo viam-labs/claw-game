@@ -10,6 +10,11 @@ Simple interface: run `npm run start-simple` (environment variables must be set 
 
 Edit `src/main.ts` to change the robot logic being run. Edit `static/index.html` to change the layout of the app.
 
+# obstacles.json
+
+This file is the single point of truth for the configuration of the claw-game's environment.  Obstacles specified through this 
+file will comprise the WorldState and be respected for all motions that the arm takes
+
 # visualize.go
 
 A minimal visualization of the robot and the enclosure it is configured with.  Leverages Viam's unofficial [visualization](https://github.com/viamrobotics/visualization) package 

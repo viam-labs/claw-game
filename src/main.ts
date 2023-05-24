@@ -70,6 +70,14 @@ const useQuandrantMath = true
 // random animations will show on move if set to true
 const useAnimations = false
 
+let constraints: Constraints = {
+  orientationConstraintList: [
+    {orientationToleranceDegs: 5},
+  ],
+  linearConstraintList: [],
+  collisionSpecificationList: [],
+};
+
 const armName: ResourceName = {
   namespace: 'rdk', 
   type: 'component', 
@@ -105,14 +113,6 @@ async function connect() {
 function delay(time: number) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
-
-let constraints: Constraints = {
-  orientationConstraintList: [
-    {orientationToleranceDegs: 5},
-  ],
-  linearConstraintList: [],
-  collisionSpecificationList: [],
-};
 
 async function home(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
@@ -345,7 +345,7 @@ async function main() {
     button.ontouchstart = async () => {touchStart(func)};
   }
 
-  // Define buttons for imcremental movement in plane
+  // Define buttons for incremental movement in plane
   async function planarMoveHandler(button: HTMLTableCellElement, x:number, y: number) {
     try {
       await inPlaneMove(motionClient, armClient, x, y);
