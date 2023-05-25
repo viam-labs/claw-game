@@ -1,9 +1,7 @@
 import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
-//import * as env from 'env';
-
-//console.log(env)
+import obstacles from '../obstacles.json';
 
 // globals
 const robotSecret = process.env.VIAM_SECRET
@@ -13,129 +11,49 @@ const moveDistance = 20
 const ignoreInterrupts = true
 const moveHeight = 500
 
+const armName: ResourceName = {
+  namespace: 'rdk', 
+  type: 'component', 
+  subtype: 'arm', 
+  name: 'myArm' 
+}
+
 /*
-  Create obstacles
+  Create obstacles and world state
 */
-const holeObject: SDK.Geometry = {
-  center: {
-    x: 470, 
-    y: 120, 
-    z: 0, 
-    oX: 0, 
-    oY: 0, 
-    oZ: 1, 
-    theta: 15
-  }, 
-  box: {
-    dimsMm: {
-      x: 250, 
-      y: 400, 
-      z: 300
+const geomList :SDK.Geometry[]  = [];
+for (const obs of obstacles){
+  const geom :SDK.Geometry = {
+    label: obs.label,
+    center: {
+      x: obs.translation.x,
+      y: obs.translation.y,
+      z: obs.translation.z,
+      oX: obs.orientation.value.x,
+      oY: obs.orientation.value.y,
+      oZ: obs.orientation.value.z,
+      theta: obs.orientation.value.th
+    },
+    box: {
+      dimsMm: {
+        x: obs.x,
+        y: obs.y,
+        z: obs.z,
+      }
     }
-  }, 
-  label: ""
+  }
+  geomList.push(geom);
 }
 
-const tableObject: SDK.Geometry = {
-  center: {
-    x: 0,
-    y: 0,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1
-  },
-  box: {
-    dimsMm: {
-      x: 2000, 
-      y: 2000, 
-      z: 30
-    }
-  },
-  label: ''
+let myObstaclesInFrame: SDK.GeometriesInFrame = {
+  referenceFrame: "world", 
+  geometriesList: geomList,
 }
 
-let frontWallObject: SDK.Geometry ={
-  center: {
-    x: 560,
-    y: 0,
-    z: 0,
-    theta: 15,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  }, 
-  box: {
-    dimsMm: {
-      x: 15, 
-      y: 2000, 
-      z: 1000
-    }
-  },
-  label: '',
+let myWorldState: SDK.WorldState ={
+  obstaclesList: [myObstaclesInFrame],
+  transformsList: [],
 }
-
-let backWallObject: SDK.Geometry ={
-  center: {
-    x: 560,
-    y: 0,
-    z: 0,
-    theta: 15,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  }, 
-  box: {
-    dimsMm: {
-      x: 15, 
-      y: 2000, 
-      z: 1000
-    }
-  },
-  label: '',
-}
-
-let rightWallObject: SDK.Geometry ={
-  center: {
-    x: 0,
-    y: 700,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  }, 
-  box: {
-    dimsMm: {
-      x: 15, 
-      y: 2000, 
-      z: 1000
-    }
-  },
-  label: '',
-}
-
-let leftWallObject: SDK.Geometry ={
-  center: {
-    x: 0,
-    y: 550,
-    z: 0,
-    theta: 105,
-    oX: 0,
-    oY: 0,
-    oZ: 1,
-  }, 
-  box: {
-    dimsMm: {
-      x: 15, 
-      y: 2000, 
-      z: 1000
-    }
-  },
-  label: '',
-}
-
 
 async function connect() {
   //This is where you will list your robot secret. You can find this information
@@ -207,17 +125,6 @@ let constraints: Constraints = {
 async function home(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a Worldstate that has the GeometriesInFrame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
   // home position - where ball should be dropped and each game starts
   let home_pose: SDK.Pose = {
     x: 390,
@@ -235,14 +142,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
   }
 
   try {   
-    let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-    
-    await motionClient.move(home_pose_in_frame, myResourceName, myWorldState, constraints)
+    await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
    
   } finally {
     //homebutton().disabled = false;
@@ -252,27 +152,9 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
 async function forward(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a WorldState that has Geometries in Frame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [frontWallObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let forwardPose: Pose = {
     x: currentPosition.pose!.x + moveDistance,
@@ -289,33 +171,15 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
     pose: forwardPose
   }
 
-  await motionClient.move(forwardPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(forwardPoseInFrame, armName, myWorldState, constraints)
 }
 
 async function back(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a WorldState that has Geometries in Frame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [backWallObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let backPose: Pose = {
     x: currentPosition.pose!.x -moveDistance,
@@ -332,33 +196,15 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
     pose: backPose
   }
 
-  await motionClient.move(backPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(backPoseInFrame, armName, myWorldState, constraints)
 }
 
 async function right(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a WorldState that has Geometries in Frame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [rightWallObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let rightPose: Pose = {
     x: currentPosition.pose!.x,
@@ -375,33 +221,15 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
     pose: rightPose
   }
 
-  await motionClient.move(rightPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(rightPoseInFrame, armName, myWorldState, constraints)
 }
 
 async function left(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
   
-  //Create a WorldState that has Geometries in Frame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [leftWallObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let leftPose: Pose = {
     x: currentPosition.pose!.x,
@@ -418,33 +246,15 @@ async function left(motionClient: MotionClient, armClient: ArmClient) {
     pose: leftPose
   }
 
-  await motionClient.move(leftPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(leftPoseInFrame, armName, myWorldState, constraints)
 }
 
 async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a WorldState that has Geometries in Frame included 
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [tableObject, holeObject],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   
@@ -465,7 +275,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
 
   //Drop the claw down
   console.log('im about to drop')
-  await motionClient.move(dropPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(dropPoseInFrame, armName, myWorldState, constraints)
   console.log('dropped')
 
 }
@@ -473,28 +283,9 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
 async function up(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
 
-  //Create a WorldState that has Geometries in Frame included 
-
-  let myObstaclesInFrame: SDK.GeometriesInFrame = {
-    referenceFrame: "world", 
-    geometriesList: [],
-  }
-  
-  let myWorldState: SDK.WorldState ={
-    obstaclesList: [myObstaclesInFrame],
-    transformsList: [],
-  }
-
-  let myResourceName: ResourceName = {
-      namespace: 'rdk', 
-      type: 'component', 
-      subtype: 'arm', 
-      name: 'myArm' 
-  }
-
   //Get current position of the arm 
   console.log('im trying to print the current position')
-  let currentPosition = await motionClient.getPose(myResourceName, 'world', [])
+  let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
   
@@ -515,7 +306,7 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
 
   //Pick the claw up 
   console.log('let`s go up')
-  await motionClient.move(upPoseInFrame, myResourceName, myWorldState, constraints)
+  await motionClient.move(upPoseInFrame, armName, myWorldState, constraints)
   console.log('up!')
 
 }

@@ -3,9 +3,6 @@ StreamClient, commonApi } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
 import obstacles from '../obstacles.json';
-// import * as env from 'env';
-
-//console.log(env)
 
 // globals
 const geomList :SDK.Geometry[]  = [];
