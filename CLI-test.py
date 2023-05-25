@@ -26,7 +26,7 @@ home_plane = 500.0
 home_pose = Pose(x=390.0, y=105.0, z=home_plane, o_x=0, o_y=0, o_z=-1, theta=0)
 
 # Define plane to grab on
-grab_plane = 280.0
+grab_plane = 240.0
 
 # If you like to test with linear constaints instead of orientation, uncomment the below
 #constraints = Constraints(linear_constraint=[LinearConstraint(line_tolerance_mm=5)])
@@ -135,7 +135,8 @@ async def move_z(arm, motion_service, z):
 
 async def main():
     robot = await connect()
-    print('Resources:' + robot.resource_names)
+    print('Resources:')
+    print(robot.resource_names)
 
     # Pose using motion service, grabbing the service from local computer
     motion_service = MotionClient.from_robot(robot, "planning:builtin")
@@ -150,9 +151,6 @@ async def main():
     commands = [args.command]
     if args.command == "sequence":
         commands = args.sequence.split(",")
-
-    # Load the obstacles from obstacles.json into a world_state object
-    world_state = get_world_state()
     
     for command in commands:
         if command == "drop":
@@ -170,19 +168,19 @@ async def main():
         if command == "left":
             print("will move left")
             # Moves the arm's y position with 50 in one direction
-            await move_to_offset(my_arm_resource, motion_service, Vector3(0, -move_increment, 0)) 
+            await move_to_offset(my_arm_resource, motion_service, Vector3(x=0, y=-move_increment, z=0)) 
         if command == "right":
             print("will move right")
             # Moves the arm's y position with 50 in one direction
-            await move_to_offset(my_arm_resource, motion_service, Vector3(0, move_increment, 0)) 
+            await move_to_offset(my_arm_resource, motion_service, Vector3(x=0, y=move_increment, z=0)) 
         if command == "forward":
             print("will move forward")
             # Moves the arm's x position with 50 in one direction
-            await move_to_offset(my_arm_resource, motion_service, Vector3(move_increment, 0, 0))
+            await move_to_offset(my_arm_resource, motion_service, Vector3(x=move_increment, y=0, z=0))
         if command == "backward":
             print("will move backward")
             # Moves the arm's x position with 50 in one direction
-            await move_to_offset(my_arm_resource, motion_service, Vector3(-move_increment, 0, 0))
+            await move_to_offset(my_arm_resource, motion_service, Vector3(x=-move_increment, y=0, z=0))
         if command == "grab":
             print("will grab")
             # Closes the gripper
