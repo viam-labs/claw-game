@@ -196,15 +196,13 @@ async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, 
 }
 
 async function resetJointFive(armClient: ArmClient){
+  console.log("resetting joint 5")
   const currJPos = await armClient.getJointPositions()
   console.log('currJPos: ', currJPos)
   let jPos = currJPos.getValuesList()
   console.log("jPos[5]: ", jPos[5])
-  if (Math.abs(jPos[5]) >= 300){
-    console.log("inside conditional to move joint 5 back to 0")
-    const desiredJPos: number[] = [jPos[0], jPos[1], jPos[2], jPos[3], jPos[4], 0]
-    armClient.moveToJointPositions(desiredJPos)
-  }
+  const desiredJPos: number[] = [jPos[0], jPos[1], jPos[2], jPos[3], jPos[4], 0]
+  armClient.moveToJointPositions(desiredJPos)
   return;
 }
 
