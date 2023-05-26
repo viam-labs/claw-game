@@ -155,11 +155,11 @@ async def main():
     for command in commands:
         if command == "drop":
             print("will drop")
-            # Moves the arm's z position from 600 to 260
+            # Moves the arm's z position to grab plane
             await move_z(my_arm_resource, motion_service, grab_plane) 
         if command == "up":
             print("will go up")
-            # Moves the arm's z position from 260 to 600
+            # Moves the arm's z position to home plane
             await move_z(my_arm_resource, motion_service, home_plane) 
         if command == "home":
             print("will return home")
@@ -167,19 +167,19 @@ async def main():
             await home(my_arm_resource, motion_service) 
         if command == "left":
             print("will move left")
-            # Moves the arm's y position with 50 in one direction
+            # Moves the arm's y position to left
             await move_to_offset(my_arm_resource, motion_service, Vector3(x=0, y=-move_increment, z=0)) 
         if command == "right":
             print("will move right")
-            # Moves the arm's y position with 50 in one direction
+            # Moves the arm's y position to right
             await move_to_offset(my_arm_resource, motion_service, Vector3(x=0, y=move_increment, z=0)) 
         if command == "forward":
             print("will move forward")
-            # Moves the arm's x position with 50 in one direction
+            # Moves the arm's x position to forward
             await move_to_offset(my_arm_resource, motion_service, Vector3(x=move_increment, y=0, z=0))
         if command == "backward":
             print("will move backward")
-            # Moves the arm's x position with 50 in one direction
+            # Moves the arm's x position to backwards
             await move_to_offset(my_arm_resource, motion_service, Vector3(x=-move_increment, y=0, z=0))
         if command == "grab":
             print("will grab")
@@ -193,7 +193,7 @@ async def main():
             print("will sleep one second")
             await asyncio.sleep(1)
         if command == "test":
-            print("will move to test position, drop, grab, return home and release")
+            print("will move to the test position, drop, grab, return home and release")
             await move_absolute(my_arm_resource, motion_service, Pose(x=0.0, y=380, z=home_plane, o_x=0, o_y=0, o_z=-1, theta=0)) 
             await move_z(my_arm_resource, motion_service, grab_plane) 
             await grab(my_board, True)
