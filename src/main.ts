@@ -130,10 +130,17 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     pose: home_pose
   }
 
-  await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
+  try {       
+    await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
+  } finally {
+    await resetJointFive(armClient)
+    // homebutton().disabled = false;
+  }
+  
 }
 
 async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, x: number, y: number) {
+  console.log('moveToQuadrant')
   if (ignoreInterrupts && await armClient.isMoving()) { return }
     let pose: SDK.Pose = {
       x: 390,
@@ -183,8 +190,20 @@ async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, 
     try {       
       await motionClient.move(new_pose_in_frame, armName, myWorldState, constraints)
     } finally {
+      await resetJointFive(armClient)
       // homebutton().disabled = false;
     }
+}
+
+async function resetJointFive(armClient: ArmClient){
+  console.log("resetting joint 5")
+  const currJPos = await armClient.getJointPositions()
+  console.log('currJPos: ', currJPos)
+  let jPos = currJPos.getValuesList()
+  console.log("jPos[5]: ", jPos[5])
+  const desiredJPos: number[] = [jPos[0], jPos[1], jPos[2], jPos[3], jPos[4], 0]
+  armClient.moveToJointPositions(desiredJPos)
+  return;
 }
 
 async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDist: number, yDist: number) {
@@ -211,7 +230,11 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
 
   // Move to new position
   console.log('moving to:' + JSON.stringify(pif))
-  await motionClient.move(pif, armName, myWorldState, constraints)
+  try {       
+    await motionClient.move(pif, armName, myWorldState, constraints)
+  } finally {
+    await resetJointFive(armClient)
+  }
 }
 
 async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: number) {
@@ -275,6 +298,8 @@ async function main() {
   const motionClient = new MotionClient(client, 'planning:builtin');
   const boardClient = new BoardClient(client, 'myBoard');
   const armClient = new ArmClient(client, 'planning:myArm');
+
+  resetJointFive(armClient);
 
   // Add this function at the top of your main.ts file
   function applyErrorClass(element: HTMLElement) {
