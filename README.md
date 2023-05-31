@@ -4,7 +4,7 @@ Run `npm run start` and visit [`localhost:8000`](localhost:8000) in a browser.
 
 The environment variables VIAM_LOCATION and VIAM_SECRET must be set, so you can set them separately or start like:
 
-`export VIAM_LOCATION=mylocation;VIAM_SECRET=mysecret;npm run start`
+`export VIAM_LOCATION=mylocation;export VIAM_SECRET=mysecret;npm run start`
 
 Simple interface: run `npm run start-simple` (environment variables must be set as per above).
 
