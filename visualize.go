@@ -22,7 +22,8 @@ var (
 	logger = golog.NewDevelopmentLogger("client")
 
 	location = flag.String("location", "", "robot address found on app.viam.com")
-	secret   = flag.String("secret", "", "robot secret for given address found on app.viam.com")
+	secret   = flag.String("apikey", "", "robot api key for given address found on app.viam.com")
+	secret   = flag.String("apikeyid", "", "robot api key id for given address found on app.viam.com")
 )
 
 func main() {
@@ -61,10 +62,12 @@ func connect(ctx context.Context) *client.RobotClient {
 		ctx,
 		*location,
 		logger,
-		client.WithDialOptions(rpc.WithCredentials(rpc.Credentials{
-			Type:    utils.CredentialsTypeRobotLocationSecret,
-			Payload: *secret,
-		})),
+		client.WithDialOptions(rpc.WithEntityCredentials(
+			*apikeyid,
+			rpc.Credentials{
+				Type:    rpc.CredentialsTypeAPIKey,
+				Payload: *apikey,
+			}),
 	)
 	if err != nil {
 		logger.Fatal(err)
