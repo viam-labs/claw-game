@@ -14,7 +14,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--command', type=str, required=True)
 parser.add_argument('--sequence', type=str, required=False)
 parser.add_argument('--location', type=str, required=True)
-parser.add_argument('--password', type=str, required=True)
+parser.add_argument('--apikey', type=str, required=True)
+parser.add_argument('--apikeyid', type=str, required=True)
 
 args = parser.parse_args()
 
@@ -58,12 +59,9 @@ def get_world_state():
 world_state = get_world_state()
 
 async def connect():
-    creds = Credentials(
-        type='robot-location-secret',
-        payload=args.password)
-    opts = RobotClient.Options(
-        refresh_interval=0,
-        dial_options=DialOptions(credentials=creds)
+    opts = RobotClient.Options.with_api_key(
+      api_key=args.apikey,
+      api_key_id=args.apikeyid
     )
     return await RobotClient.at_address(args.location, opts)
 
