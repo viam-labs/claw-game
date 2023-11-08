@@ -39,7 +39,8 @@ let myWorldState: SDK.WorldState ={
   transformsList: [],
 }
 
-const robotSecret = process.env.VIAM_SECRET
+const robotAPIKey = process.env.VIAM_API_KEY
+const robotAPIKeyID = process.env.VIAM_API_KEY_ID
 const robotLocation = process.env.VIAM_LOCATION
 const grabberPin = '8'
 const moveDistance = 20
@@ -83,26 +84,23 @@ const armName: ResourceName = {
 }
 
 async function connect() {
+  //This is where you will list your robot secret. You can find this information
+  //in your Code Sample tab on your robot page. Check the Typescript code sample 
+  //to get started. :)  
   const secret = robotSecret;
   const credential = {
-    payload: secret,
-    type: 'robot-location-secret',
+    type: 'api-key',
+    payload: robotAPIKey,
   };
 
-  // This is the host address of the main part of your robot.
+  //This is the host address of the main part of your robot.
   const host = robotLocation;
-
-  // This is the signaling address of your robot. Typically this would not need to be modified.
-  const signalingAddress = 'https://app.viam.com:443';
-
-  const iceServers = [{ urls: 'stun:global.stun.twilio.com:3478' }];
 
   return createRobotClient({
     host,
     credential,
-    authEntity: host,
-    signalingAddress,
-    iceServers,
+    authEntity: robotAPIKeyID,
+    signalingAddress: 'https://app.viam.com:443',
   });
 }
 
