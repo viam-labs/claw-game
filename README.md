@@ -4,6 +4,15 @@ Run `npm run start` and visit [`localhost:8000`](localhost:8000) in a browser.
 
 The environment variables `VIAM_LOCATION`, `VIAM_API_KEY_ID`, and `VIAM_API_KEY` must be set in a `.env` file within the root project directory, you can make a copy of the `.env.example` file to get started.
 
+The `.env.example` also includes variables to configure the names of the board, arm, motion, and (optional) gripper component/service names based on the machine configuration with the default values:
+
+```
+ARM_CLIENT_NAME="myArm"
+BOARD_CLIENT_NAME="myBoard"
+GRIPPER_CLIENT_NAME="myGripper"
+MOTION_CLIENT_NAME="builtin"
+```
+
 Simple interface: run `npm run start-simple` (environment variables must be set as per above).
 
 Edit `src/main.ts` to change the robot logic being run. Edit `static/index.html` to change the layout of the app.
