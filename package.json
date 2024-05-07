@@ -12,7 +12,7 @@
   "devDependencies": {
     "dotenv": "^16.4.5",
     "esbuild": "^0.21.0",
-    "esbuild-envfile-plugin": "^1.0.6",
+    "esbuild-envfile-plugin": "https://github.com/rw3iss/esbuild-envfile-plugin#86bcb84",
     "typescript": "^5.0.4"
   },
   "dependencies": {

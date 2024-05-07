@@ -1,4 +1,4 @@
-import { Client, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
+import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
 import * as env from 'env';
@@ -8,6 +8,10 @@ import obstacles from '../obstacles.json';
 const robotAPIKey = env.VIAM_API_KEY
 const robotAPIKeyID = env.VIAM_API_KEY_ID
 const robotLocation = env.VIAM_LOCATION
+const armClientName = env.ARM_CLIENT_NAME
+const boardClientName = env.BOARD_CLIENT_NAME
+const gripperClientName = env.GRIPPER_CLIENT_NAME
+const motionClientName = env.MOTION_CLIENT_NAME
 const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
@@ -138,7 +142,6 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
 
   try {
     await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
-
   } finally {
     //homebutton().disabled = false;
   }
@@ -306,30 +309,37 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
 
 }
 
-async function grab(boardClient: BoardClient) {
+async function grab(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-    //grabbutton().disabled = true;
+    console.log(`i'm grabbin`);
 
-    console.log(await boardClient.getGPIO(grabberPin));
-    console.log('i`m grabbin');
-    await boardClient.setGPIO(grabberPin, true);
-
-
-  } finally {
-    //grabbutton().disabled = false;
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, true);
+    } else {
+      await gripperClient.grab();
+    }
+  } catch (error) {
+    console.error('Unable to grab at this time')
+    console.error(error)
   }
 }
 
-async function release(boardClient: BoardClient) {
+async function release(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-    // grabbutton().disabled = true;
-
-    console.log(await boardClient.getGPIO(grabberPin));
-    await boardClient.setGPIO(grabberPin, false);
-    await delay(1000);
     console.log('i let go now');
-  } finally {
-    //grabbutton().disabled = false;
+
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, false);
+    } else {
+      await gripperClient.open();
+    }
+
+    await delay(1000);
+  } catch (error) {
+    console.error('Unable to release at this time')
+    console.error(error)
   }
 }
 
@@ -343,9 +353,10 @@ async function main() {
     console.log(error);
     return;
   }
-  const motionClient = new MotionClient(client, 'planning:builtin');
-  const boardClient = new BoardClient(client, 'myBoard');
-  const armClient = new ArmClient(client, 'planning:myArm');
+  const motionClient = new MotionClient(client, motionClientName);
+  const boardClient = new BoardClient(client, boardClientName);
+  const armClient = new ArmClient(client, armClientName);
+  const gripperClient = gripperClientName ? new GripperClient(client, gripperClientName) : null;
 
   // Add this function at the top of your main.ts file
   function applyErrorClass(element: HTMLElement) {
@@ -449,12 +460,12 @@ async function main() {
     if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
-      await grab(boardClient);
+      await grab(boardClient, gripperClient);
       await delay(1000);
       await up(motionClient, armClient);
       await home(motionClient, armClient);
       await delay(1000);
-      await release(boardClient);
+      await release(boardClient, gripperClient);
     } catch (error) {
       console.log(error);
       dropbutton().classList.add('error');

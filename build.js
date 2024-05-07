@@ -2,10 +2,7 @@
 const esbuild = require('esbuild')
 const envfilePlugin = require('esbuild-envfile-plugin')
 
-esbuild.serve({
-  servedir: 'static',
-  port: 8000,
-}, {
+const context = esbuild.context({
   entryPoints: ['src/main.ts'],
   bundle: true,
   sourcemap: true,
@@ -16,6 +13,11 @@ esbuild.serve({
   outfile: 'static/main.js',
   plugins: [envfilePlugin],
 })
+
+context.then(c => c.serve({
+  servedir: 'static',
+  port: 8000,
+}))
   .then(({ host, port }) => console.log(`Serving application at ${host}:${port}`))
   .catch((error) => {
     console.error(`Error serving application: ${error.message}`)
