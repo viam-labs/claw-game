@@ -1,30 +1,35 @@
-import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, StreamClient } from '@viamrobotics/sdk';
+import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+import * as env from 'env';
 import obstacles from '../obstacles.json';
 
 // globals
-const robotAPIKey = process.env.VIAM_API_KEY
-const robotAPIKeyID = process.env.VIAM_API_KEY_ID
-const robotLocation = process.env.VIAM_LOCATION
+const robotAPIKey = env.VIAM_API_KEY
+const robotAPIKeyID = env.VIAM_API_KEY_ID
+const robotLocation = env.VIAM_LOCATION
+const armClientName = env.ARM_CLIENT_NAME
+const boardClientName = env.BOARD_CLIENT_NAME
+const gripperClientName = env.GRIPPER_CLIENT_NAME
+const motionClientName = env.MOTION_CLIENT_NAME
 const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
 const moveHeight = 500
 
 const armName: ResourceName = {
-  namespace: 'rdk', 
-  type: 'component', 
-  subtype: 'arm', 
-  name: 'myArm' 
+  namespace: 'rdk',
+  type: 'component',
+  subtype: 'arm',
+  name: 'myArm'
 }
 
 /*
   Create obstacles and world state
 */
-const geomList :SDK.Geometry[]  = [];
-for (const obs of obstacles){
-  const geom :SDK.Geometry = {
+const geomList: SDK.Geometry[] = [];
+for (const obs of obstacles) {
+  const geom: SDK.Geometry = {
     label: obs.label,
     center: {
       x: obs.translation.x,
@@ -47,20 +52,19 @@ for (const obs of obstacles){
 }
 
 let myObstaclesInFrame: SDK.GeometriesInFrame = {
-  referenceFrame: "world", 
+  referenceFrame: "world",
   geometriesList: geomList,
 }
 
-let myWorldState: SDK.WorldState ={
+let myWorldState: SDK.WorldState = {
   obstaclesList: [myObstaclesInFrame],
   transformsList: [],
 }
 
 async function connect() {
-  //This is where you will list your robot secret. You can find this information
+  //This is where you will use your robot credentials. You can find this information
   //in your Code Sample tab on your robot page. Check the Typescript code sample 
   //to get started. :)  
-  const secret = robotSecret;
   const credential = {
     type: 'api-key',
     payload: robotAPIKey,
@@ -111,7 +115,7 @@ function delay(time) {
 
 let constraints: Constraints = {
   orientationConstraintList: [
-    {orientationToleranceDegs: 5},
+    { orientationToleranceDegs: 5 },
   ],
   linearConstraintList: [],
   collisionSpecificationList: [],
@@ -130,15 +134,14 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     oY: 0,
     oZ: -1,
   };
-  
-  let home_pose_in_frame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+
+  let home_pose_in_frame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: home_pose
   }
 
-  try {   
+  try {
     await motionClient.move(home_pose_in_frame, armName, myWorldState, constraints)
-   
   } finally {
     //homebutton().disabled = false;
   }
@@ -157,12 +160,12 @@ async function forward(motionClient: MotionClient, armClient: ArmClient) {
     z: currentPosition.pose!.z,
     theta: 0,
     oX: 0,
-    oY: 0, 
+    oY: 0,
     oZ: -1
   };
 
-  let forwardPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let forwardPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: forwardPose
   }
 
@@ -177,7 +180,7 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
   let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let backPose: Pose = {
-    x: currentPosition.pose!.x -moveDistance,
+    x: currentPosition.pose!.x - moveDistance,
     y: currentPosition.pose!.y,
     z: currentPosition.pose!.z,
     theta: 0,
@@ -186,8 +189,8 @@ async function back(motionClient: MotionClient, armClient: ArmClient) {
     oZ: -1
   };
 
-  let backPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let backPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: backPose
   }
 
@@ -211,8 +214,8 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
     oZ: -1
   };
 
-  let rightPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let rightPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: rightPose
   }
 
@@ -221,14 +224,14 @@ async function right(motionClient: MotionClient, armClient: ArmClient) {
 
 async function left(motionClient: MotionClient, armClient: ArmClient) {
   if (ignoreInterrupts && await armClient.isMoving()) { console.log("Too fast!"); return }
-  
+
   //Get current position of the arm 
   console.log('im trying to print the current position')
   let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
   let leftPose: Pose = {
     x: currentPosition.pose!.x,
-    y: currentPosition.pose!.y -moveDistance,
+    y: currentPosition.pose!.y - moveDistance,
     z: currentPosition.pose!.z,
     theta: 0,
     oX: 0,
@@ -236,8 +239,8 @@ async function left(motionClient: MotionClient, armClient: ArmClient) {
     oZ: -1
   };
 
-  let leftPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let leftPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: leftPose
   }
 
@@ -252,7 +255,7 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
   let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
-  
+
   let dropPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
@@ -263,8 +266,8 @@ async function dropDown(motionClient: MotionClient, armClient: ArmClient) {
     oZ: currentPosition.pose!.oZ
   };
 
-  let dropPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let dropPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: dropPose
   }
 
@@ -283,7 +286,7 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
   let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
 
-  
+
   let upPose: Pose = {
     x: currentPosition.pose!.x,
     y: currentPosition.pose!.y,
@@ -294,8 +297,8 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
     oZ: currentPosition.pose!.oZ
   };
 
-  let upPoseInFrame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let upPoseInFrame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: upPose
   }
 
@@ -306,36 +309,43 @@ async function up(motionClient: MotionClient, armClient: ArmClient) {
 
 }
 
-async function grab(boardClient: BoardClient) {
+async function grab(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-    //grabbutton().disabled = true;
+    console.log(`i'm grabbin`);
 
-    console.log(await boardClient.getGPIO(grabberPin));
-    console.log('i`m grabbin');
-    await boardClient.setGPIO(grabberPin, true);
-    
-   
-  } finally {
-    //grabbutton().disabled = false;
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, true);
+    } else {
+      await gripperClient.grab();
+    }
+  } catch (error) {
+    console.error('Unable to grab at this time')
+    console.error(error)
   }
 }
 
-async function release(boardClient: BoardClient) {
+async function release(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-   // grabbutton().disabled = true;
-
-    console.log(await boardClient.getGPIO(grabberPin));
-    await boardClient.setGPIO(grabberPin, false);
-    await delay(1000);
     console.log('i let go now');
-  } finally {
-    //grabbutton().disabled = false;
+
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, false);
+    } else {
+      await gripperClient.open();
+    }
+
+    await delay(1000);
+  } catch (error) {
+    console.error('Unable to release at this time')
+    console.error(error)
   }
 }
 
 async function main() {
   // Connect to client
-  let client: Client;  
+  let client: Client;
   try {
     client = await connect();
     console.log('connected!');
@@ -343,9 +353,10 @@ async function main() {
     console.log(error);
     return;
   }
-  const motionClient = new MotionClient(client, 'planning:builtin');
-  const boardClient = new BoardClient(client, 'myBoard');
-  const armClient = new ArmClient(client, 'planning:myArm');
+  const motionClient = new MotionClient(client, motionClientName);
+  const boardClient = new BoardClient(client, boardClientName);
+  const armClient = new ArmClient(client, armClientName);
+  const gripperClient = gripperClientName ? new GripperClient(client, gripperClientName) : null;
 
   // Add this function at the top of your main.ts file
   function applyErrorClass(element: HTMLElement) {
@@ -370,12 +381,12 @@ async function main() {
     if (forwardbutton().classList.contains('error')) return;
     try {
       await back(motionClient, armClient);
-      if (forwardbutton().classList.contains('custom-box-shadow-active')) {await forwardHandler()};
+      if (forwardbutton().classList.contains('custom-box-shadow-active')) { await forwardHandler() };
     } catch (error) {
       console.log(error);
       forwardbutton().classList.add('error');
       forwardbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { forwardbutton().classList.remove('error'); }, 3000 )
+      setTimeout(() => { forwardbutton().classList.remove('error'); }, 3000)
     }
   }
 
@@ -392,12 +403,12 @@ async function main() {
     if (backbutton().classList.contains('error')) return;
     try {
       await forward(motionClient, armClient);
-      if (backbutton().classList.contains('custom-box-shadow-active')) {await backHandler()};
+      if (backbutton().classList.contains('custom-box-shadow-active')) { await backHandler() };
     } catch (error) {
       console.log(error);
       backbutton().classList.add('error');
       backbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { backbutton().classList.remove('error'); }, 3000 )
+      setTimeout(() => { backbutton().classList.remove('error'); }, 3000)
     }
   }
 
@@ -414,12 +425,12 @@ async function main() {
     if (rightbutton().classList.contains('error')) return;
     try {
       await right(motionClient, armClient);
-      if (rightbutton().classList.contains('custom-box-shadow-active')) {await rightHandler()};
+      if (rightbutton().classList.contains('custom-box-shadow-active')) { await rightHandler() };
     } catch (error) {
       console.log(error);
       rightbutton().classList.add('error');
       rightbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { rightbutton().classList.remove('error'); }, 3000 )
+      setTimeout(() => { rightbutton().classList.remove('error'); }, 3000)
     }
   }
 
@@ -436,12 +447,12 @@ async function main() {
     if (leftbutton().classList.contains('error')) return;
     try {
       await left(motionClient, armClient);
-      if (leftbutton().classList.contains('custom-box-shadow-active')) {await leftHandler()};
+      if (leftbutton().classList.contains('custom-box-shadow-active')) { await leftHandler() };
     } catch (error) {
       console.log(error);
       leftbutton().classList.add('error');
       leftbutton()?.querySelector('svg')?.classList.add('icon');
-      setTimeout( () => { leftbutton().classList.remove('error'); }, 3000 )
+      setTimeout(() => { leftbutton().classList.remove('error'); }, 3000)
     }
   }
 
@@ -449,16 +460,16 @@ async function main() {
     if (dropbutton().classList.contains('error')) return;
     try {
       await dropDown(motionClient, armClient);
-      await grab(boardClient);
+      await grab(boardClient, gripperClient);
       await delay(1000);
       await up(motionClient, armClient);
       await home(motionClient, armClient);
       await delay(1000);
-      await release(boardClient);
+      await release(boardClient, gripperClient);
     } catch (error) {
       console.log(error);
       dropbutton().classList.add('error');
-      setTimeout( () => { dropbutton().classList.remove('error'); }, 3000 )
+      setTimeout(() => { dropbutton().classList.remove('error'); }, 3000)
     }
   }
 

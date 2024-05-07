@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 const esbuild = require('esbuild')
+const envfilePlugin = require('esbuild-envfile-plugin')
 
-esbuild.serve({
-	servedir: 'static',
-	port: 8000,
-}, {
-	entryPoints: ['src/main.ts'],
-	bundle: true,
-	sourcemap: true,
-	sourcesContent: true,
-	target: [
-		'es2015',
-	],
-	outfile: 'static/main.js',
-    define: {
-        'process.env.VIAM_LOCATION': JSON.stringify(process.env.VIAM_LOCATION),
-        'process.env.VIAM_SECRET': JSON.stringify(process.env.VIAM_SECRET)
-      }
+const context = esbuild.context({
+  entryPoints: ['src/main.ts'],
+  bundle: true,
+  sourcemap: true,
+  sourcesContent: true,
+  target: [
+    'es2015',
+  ],
+  outfile: 'static/main.js',
+  plugins: [envfilePlugin],
 })
+
+context.then(c => c.serve({
+  servedir: 'static',
+  port: 8000,
+}))
+  .then(({ host, port }) => console.log(`Serving application at ${host}:${port}`))
+  .catch((error) => {
+    console.error(`Error serving application: ${error.message}`)
+    process.exit(1)
+  })
+

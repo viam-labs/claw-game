@@ -1,13 +1,13 @@
-import { Client, BoardClient, MotionClient, ArmClient, createRobotClient, 
-StreamClient, commonApi } from '@viamrobotics/sdk';
+import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+import * as env from 'env';
 import obstacles from '../obstacles.json';
 
 // globals
-const geomList :SDK.Geometry[]  = [];
-for (const obs of obstacles){
-  const geom :SDK.Geometry = {
+const geomList: SDK.Geometry[] = [];
+for (const obs of obstacles) {
+  const geom: SDK.Geometry = {
     label: obs.label,
     center: {
       x: obs.translation.x,
@@ -30,18 +30,22 @@ for (const obs of obstacles){
 }
 
 let myObstaclesInFrame: SDK.GeometriesInFrame = {
-  referenceFrame: "world", 
+  referenceFrame: "world",
   geometriesList: geomList,
 }
 
-let myWorldState: SDK.WorldState ={
+let myWorldState: SDK.WorldState = {
   obstaclesList: [myObstaclesInFrame],
   transformsList: [],
 }
 
-const robotAPIKey = process.env.VIAM_API_KEY
-const robotAPIKeyID = process.env.VIAM_API_KEY_ID
-const robotLocation = process.env.VIAM_LOCATION
+const robotAPIKey = env.VIAM_API_KEY
+const robotAPIKeyID = env.VIAM_API_KEY_ID
+const robotLocation = env.VIAM_LOCATION
+const armClientName = env.ARM_CLIENT_NAME
+const boardClientName = env.BOARD_CLIENT_NAME
+const gripperClientName = env.GRIPPER_CLIENT_NAME
+const motionClientName = env.MOTION_CLIENT_NAME
 const grabberPin = '8'
 const moveDistance = 20
 const ignoreInterrupts = true
@@ -52,15 +56,15 @@ const moveTimeout = 3000
 
 // if we mount the arm straight we don't need this
 const offset = 0
-const quadrantSize = (reachMm*2)/gridSize
+const quadrantSize = (reachMm * 2) / gridSize
 let gridPositions = {
-  '1,1' : {x :270, y: 450}, 
-  '1,-1' : { x: 300, y: -283},
-  '-1,-1': {x: -373, y: -463},
-  '-1,0': {x: -373, y: -90},
-  '-1,1': {x: -373, y: 283},
-  '0,1': {x: 0, y: 373},
-  '0,-1': {x: 0, y: -373}
+  '1,1': { x: 270, y: 450 },
+  '1,-1': { x: 300, y: -283 },
+  '-1,-1': { x: -373, y: -463 },
+  '-1,0': { x: -373, y: -90 },
+  '-1,1': { x: -373, y: 283 },
+  '0,1': { x: 0, y: 373 },
+  '0,-1': { x: 0, y: -373 }
 }
 // if this is set to true, we calculate based on enclosure geometry
 const useQuandrantMath = true
@@ -70,24 +74,23 @@ const useAnimations = false
 
 let constraints: Constraints = {
   orientationConstraintList: [
-    {orientationToleranceDegs: 5},
+    { orientationToleranceDegs: 5 },
   ],
   linearConstraintList: [],
   collisionSpecificationList: [],
 };
 
 const armName: ResourceName = {
-  namespace: 'rdk', 
-  type: 'component', 
-  subtype: 'arm', 
-  name: 'myArm' 
+  namespace: 'rdk',
+  type: 'component',
+  subtype: 'arm',
+  name: 'myArm'
 }
 
 async function connect() {
-  //This is where you will list your robot secret. You can find this information
+  //This is where you will your robot connection credentials. You can find this information
   //in your Code Sample tab on your robot page. Check the Typescript code sample 
   //to get started. :)  
-  const secret = robotSecret;
   const credential = {
     type: 'api-key',
     payload: robotAPIKey,
@@ -122,9 +125,9 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
     oY: 0,
     oZ: -1,
   };
-  
-  let home_pose_in_frame: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+
+  let home_pose_in_frame: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: home_pose
   }
 
@@ -133,56 +136,56 @@ async function home(motionClient: MotionClient, armClient: ArmClient) {
 
 async function moveToQuadrant(motionClient: MotionClient, armClient: ArmClient, x: number, y: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
-    let pose: SDK.Pose = {
-      x: 390,
-      y: 105,
+  let pose: SDK.Pose = {
+    x: 390,
+    y: 105,
+    z: moveHeight,
+    theta: 0,
+    oX: 0,
+    oY: 0,
+    oZ: -1,
+  }
+
+  if (useQuandrantMath) {
+    let xTarget = (quadrantSize * x)
+    let yTarget = (quadrantSize * y)
+    let yOffset = 0
+    let xOffset = 0
+    if (xTarget < 0) {
+      yOffset = 0 - offset
+    } else if (xTarget === 0) {
+      // do nothing
+    } else {
+      xOffset = 0 - offset
+      yOffset = offset
+    }
+    pose = {
+      x: xTarget + xOffset,
+      y: yTarget + yOffset,
       z: moveHeight,
       theta: 0,
       oX: 0,
       oY: 0,
       oZ: -1,
-    }
+    };
+  } else {
+    let gridLookup = x + ',' + y
+    pose.x = gridPositions[gridLookup].x
+    pose.y = gridPositions[gridLookup].y
+  }
 
-    if (useQuandrantMath) {
-      let xTarget = (quadrantSize*x)
-      let yTarget = (quadrantSize*y)
-      let yOffset = 0
-      let xOffset = 0
-      if (xTarget < 0) {
-        yOffset = 0 - offset
-      } else if (xTarget === 0) {
-        // do nothing
-      } else {
-        xOffset = 0 - offset
-        yOffset = offset
-      }
-      pose = {
-        x: xTarget + xOffset,
-        y: yTarget + yOffset,
-        z: moveHeight,
-        theta: 0,
-        oX: 0,
-        oY: 0,
-        oZ: -1,
-      };
-    } else {
-      let gridLookup = x + ',' + y
-      pose.x = gridPositions[gridLookup].x
-      pose.y = gridPositions[gridLookup].y
-    }
+  console.log(x, y, pose)
 
-    console.log(x, y, pose)
+  let new_pose_in_frame: SDK.PoseInFrame = {
+    referenceFrame: "world",
+    pose: pose
+  }
 
-    let new_pose_in_frame: SDK.PoseInFrame ={
-      referenceFrame: "world", 
-      pose: pose
-    }
-  
-    try {       
-      await motionClient.move(new_pose_in_frame, armName, myWorldState, constraints)
-    } finally {
-      // homebutton().disabled = false;
-    }
+  try {
+    await motionClient.move(new_pose_in_frame, armName, myWorldState, constraints)
+  } finally {
+    // homebutton().disabled = false;
+  }
 }
 
 async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDist: number, yDist: number) {
@@ -199,11 +202,11 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
     z: currentPosition.pose!.z,
     theta: 0,
     oX: 0,
-    oY: 0, 
+    oY: 0,
     oZ: -1
   };
   let pif: SDK.PoseInFrame = {
-    referenceFrame: "world", 
+    referenceFrame: "world",
     pose: pose
   }
 
@@ -214,7 +217,7 @@ async function inPlaneMove(motionClient: MotionClient, armClient: ArmClient, xDi
 
 async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: number) {
   if (ignoreInterrupts && await armClient.isMoving()) { return }
-  
+
   // Get current position of the arm 
   let currentPosition = await motionClient.getPose(armName, 'world', [])
   console.log('current position:' + JSON.stringify(currentPosition))
@@ -228,8 +231,8 @@ async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: 
     oY: 0,
     oZ: -1
   };
-  let pif: SDK.PoseInFrame ={
-    referenceFrame: "world", 
+  let pif: SDK.PoseInFrame = {
+    referenceFrame: "world",
     pose: pose
   }
 
@@ -238,31 +241,43 @@ async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: 
   await motionClient.move(pif, armName, myWorldState, constraints)
 }
 
-async function grab(boardClient: BoardClient) {
+async function grab(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-    console.log(await boardClient.getGPIO(grabberPin));
-    console.log('i`m grabbin');
-    await boardClient.setGPIO(grabberPin, true);
-    
-   
-  } finally {
+    console.log(`i'm grabbin`);
 
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, true);
+    } else {
+      await gripperClient.grab();
+    }
+  } catch (error) {
+    console.error('Unable to grab at this time')
+    console.error(error)
   }
 }
 
-async function release(boardClient: BoardClient) {
+async function release(boardClient: BoardClient, gripperClient: GripperClient | null) {
   try {
-    console.log(await boardClient.getGPIO(grabberPin));
-    await boardClient.setGPIO(grabberPin, false);
-    await delay(1000);
     console.log('i let go now');
-  } finally {
+
+    if (gripperClient === null) {
+      console.log(await boardClient.getGPIO(grabberPin));
+      await boardClient.setGPIO(grabberPin, false);
+    } else {
+      await gripperClient.open();
+    }
+
+    await delay(1000);
+  } catch (error) {
+    console.error('Unable to release at this time')
+    console.error(error)
   }
 }
 
 async function main() {
   // Connect to client
-  let client: Client;  
+  let client: Client;
   try {
     client = await connect();
     console.log('connected!');
@@ -270,9 +285,10 @@ async function main() {
     console.log(error);
     return;
   }
-  const motionClient = new MotionClient(client, 'planning:builtin');
-  const boardClient = new BoardClient(client, 'myBoard');
-  const armClient = new ArmClient(client, 'planning:myArm');
+  const motionClient = new MotionClient(client, motionClientName);
+  const boardClient = new BoardClient(client, boardClientName);
+  const armClient = new ArmClient(client, armClientName);
+  const gripperClient = new GripperClient(client, gripperClientName);
 
   // Add this function at the top of your main.ts file
   function applyErrorClass(element: HTMLElement) {
@@ -334,21 +350,21 @@ async function main() {
       isMoving = false
     }
   };
-  
+
   function setButtonBehavior(button: HTMLTableCellElement, func: () => Promise<boolean>) {
-    button.onmousedown = async () => {mouseDown(func)}; 
-    button.ontouchstart = async () => {touchStart(func)};
+    button.onmousedown = async () => { mouseDown(func) };
+    button.ontouchstart = async () => { touchStart(func) };
   }
 
   // Define buttons for incremental movement in plane
-  async function planarMoveHandler(button: HTMLTableCellElement, x:number, y: number) {
+  async function planarMoveHandler(button: HTMLTableCellElement, x: number, y: number) {
     try {
       await inPlaneMove(motionClient, armClient, x, y);
-      if (button.classList.contains('custom-box-shadow-active')) {await planarMoveHandler(button, x, y)};
+      if (button.classList.contains('custom-box-shadow-active')) { await planarMoveHandler(button, x, y) };
     } catch (error) {
       console.log(error);
       styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, moveTimeout)
+      setTimeout(() => { styleMove('ready'); isMoving = false; }, moveTimeout)
       return false
     }
     return true
@@ -371,7 +387,7 @@ async function main() {
     } catch (error) {
       console.log(error);
       styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, moveTimeout)
+      setTimeout(() => { styleMove('ready'); isMoving = false; }, moveTimeout)
       return false
     }
     return true
@@ -399,23 +415,23 @@ async function main() {
   async function dropHandler() {
     try {
       await zMove(motionClient, armClient, 240);
-      await grab(boardClient);
+      await grab(boardClient, gripperClient);
       await delay(1000);
       await zMove(motionClient, armClient, moveHeight);
       await home(motionClient, armClient);
       await delay(1000);
-      await release(boardClient);
+      await release(boardClient, gripperClient);
     } catch (error) {
       console.log(error);
       styleMove('error')
-      setTimeout( () => { styleMove('ready'); isMoving = false; }, 2000 )
+      setTimeout(() => { styleMove('ready'); isMoving = false; }, 2000)
       return false
     }
     return true
   }
 
   const dropbutton = <HTMLTableCellElement>document.getElementById('drop-button');
-  
+
   setButtonBehavior(dropbutton, () => dropHandler());
 
 
@@ -429,12 +445,12 @@ async function main() {
 main();
 
 // disable user zooming
-document.addEventListener('touchmove', function (event) {
+document.addEventListener('touchmove', function(event) {
   if (event.scale !== 1) { event.preventDefault(); }
 }, { passive: false });
 
 var lastTouchEnd = 0;
-document.addEventListener('touchend', function (event) {
+document.addEventListener('touchend', function(event) {
   var now = (new Date()).getTime();
   if (now - lastTouchEnd <= 300) {
     event.preventDefault();
