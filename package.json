@@ -10,13 +10,13 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "dotenv": "^16.0.3",
-    "esbuild": "^0.16.17",
-    "esbuild-envfile-plugin": "^1.0.5",
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.21.0",
+    "esbuild-envfile-plugin": "^1.0.6",
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@viamrobotics/sdk": "^0.1.0",
+    "@viamrobotics/sdk": "^0.15.0",
     "autoprefixer": "^10.4.14",
     "nes.css": "^2.3.0",
     "postcss": "^8.4.23",
