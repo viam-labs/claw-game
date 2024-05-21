@@ -151,7 +151,8 @@ const clawMachine = setup({
         return params.client;
       }
     }),
-    "clearError": assign({ error: null })
+    "clearError": assign({ error: null }),
+    "styleMove": (_, params: { state: 'moving' | 'ready' | 'error' }) => { },
   },
   "actors": {
     "createRobotClient": fromPromise<Client, { apiKey: string, apiKeyId: string, locationAddress: string }>(
@@ -246,6 +247,7 @@ const clawMachine = setup({
       },
     },
     "clientErrored": {
+      entry: { type: "styleMove", params: { state: 'error' } },
       "on": {
         "retry": {
           "target": "initializing",
@@ -254,6 +256,7 @@ const clawMachine = setup({
       }
     },
     "ready": {
+      entry: { type: "styleMove", params: { state: 'ready' } },
       "on": {
         "move": {
           "target": "moving"
@@ -264,6 +267,7 @@ const clawMachine = setup({
       }
     },
     "moving": {
+      entry: { type: "styleMove", params: { state: 'moving' } },
       "invoke": {
         "id": "armMover",
         "input": ({ context, event }) => {
@@ -294,6 +298,7 @@ const clawMachine = setup({
       }
     },
     "picking": {
+      entry: { type: "styleMove", params: { state: 'moving' } },
       "invoke": {
         "id": "picker",
         "input": ({ context }) => ({ ...context, moveHeight }),
@@ -311,6 +316,7 @@ const clawMachine = setup({
       }
     },
     "displayingMoveError": {
+      entry: { type: "styleMove", params: { state: 'error' } },
       "after": {
         "3000": {
           "target": "ready",
@@ -319,6 +325,7 @@ const clawMachine = setup({
       }
     },
     "displayingPickerError": {
+      entry: { type: "styleMove", params: { state: 'error' } },
       "after": {
         "2000": {
           "target": "ready",
@@ -464,50 +471,36 @@ async function zMove(motionClient: MotionClient, armClient: ArmClient, zHeight: 
 }
 
 async function grab(boardClient: BoardClient, gripperClient: GripperClient | null) {
-  try {
-    console.log(`i'm grabbin`);
+  console.log(`i'm grabbin`);
 
-    if (gripperClient === null) {
-      console.log(await boardClient.getGPIO(grabberPin));
-      await boardClient.setGPIO(grabberPin, true);
-    } else {
-      await gripperClient.grab();
-    }
-  } catch (error) {
-    console.error('Unable to grab at this time')
-    console.error(error)
+  if (gripperClient === null) {
+    console.log(await boardClient.getGPIO(grabberPin));
+    await boardClient.setGPIO(grabberPin, true);
+  } else {
+    await gripperClient.grab();
   }
 }
 
 async function release(boardClient: BoardClient, gripperClient: GripperClient | null) {
-  try {
-    console.log('i let go now');
+  console.log('i let go now');
 
-    if (gripperClient === null) {
-      console.log(await boardClient.getGPIO(grabberPin));
-      await boardClient.setGPIO(grabberPin, false);
-    } else {
-      await gripperClient.open();
-    }
-
-    await delay(1000);
-  } catch (error) {
-    console.error('Unable to release at this time')
-    console.error(error)
+  if (gripperClient === null) {
+    console.log(await boardClient.getGPIO(grabberPin));
+    await boardClient.setGPIO(grabberPin, false);
+  } else {
+    await gripperClient.open();
   }
+
+  await delay(1000);
 }
 
-function applyErrorClass(element: HTMLElement) {
-  element.classList.add("error");
-}
-
-function styleMove(state: 'moving' | 'ready' | 'error') {
+function styleMove(_, params: { state: 'moving' | 'ready' | 'error' }) {
   const container = document.getElementById('grid-container')
   if (container == null) return;
 
-  container.dataset.state = state;
+  container.dataset.state = params.state;
 
-  if (state === 'moving') {
+  if (params.state === 'moving') {
     // randomly animate
     if (useAnimations) {
       let rand = Math.floor(Math.random() * 50) + 1
@@ -517,39 +510,21 @@ function styleMove(state: 'moving' | 'ready' | 'error') {
       }
     }
   }
-  if (state === 'ready') {
+  if (params.state === 'ready') {
     document.getElementById('animate-left').style.backgroundImage = ''
     document.getElementById('animate-right').style.backgroundImage = ''
   }
 }
 
 async function main() {
-  const clawMachineActor = createActor(clawMachine)
+  const clawMachineActor = createActor(clawMachine.provide({
+    actions: {
+      styleMove
+    }
+  }))
 
   clawMachineActor.subscribe(snapshot => {
-    switch (snapshot.value) {
-      case 'ready': {
-        styleMove('ready')
-        break;
-      }
-      case 'picking':
-      case 'moving': {
-        styleMove('moving')
-        break;
-      }
-      case 'clientErrored':
-      case 'displayingMoveError':
-      case 'displayingPickerError': {
-        console.error(snapshot.context.error)
-        styleMove('error')
-        break;
-      }
-      case 'initializing':
-      case 'connectingToMachine':
-      case 'connected': {
-        break;
-      }
-    }
+    console.log(`Current state: ${snapshot.value}`)
   })
 
   document.body.addEventListener('pointerdown', (event) => {
