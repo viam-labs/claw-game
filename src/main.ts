@@ -48,7 +48,6 @@ const boardClientName = env.BOARD_CLIENT_NAME
 const gripperClientName = env.GRIPPER_CLIENT_NAME
 const motionClientName = env.MOTION_CLIENT_NAME
 const grabberPin = '8'
-const moveDistance = 20
 const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
@@ -502,13 +501,13 @@ function applyErrorClass(element: HTMLElement) {
   element.classList.add("error");
 }
 
-function styleMove(state: 'move' | 'ready' | 'error') {
-  let element = document.getElementById('grid-container')
-  if (element == null) return;
-  if (state === 'move') {
-    element.classList.remove('grid-container-error')
-    element.classList.remove('grid-container-ready')
-    element.classList.add('grid-container-moving')
+function styleMove(state: 'moving' | 'ready' | 'error') {
+  const container = document.getElementById('grid-container')
+  if (container == null) return;
+
+  container.dataset.state = state;
+
+  if (state === 'moving') {
     // randomly animate
     if (useAnimations) {
       let rand = Math.floor(Math.random() * 50) + 1
@@ -519,24 +518,10 @@ function styleMove(state: 'move' | 'ready' | 'error') {
     }
   }
   if (state === 'ready') {
-    element.classList.remove('grid-container-error')
-    element.classList.remove('grid-container-moving')
-    element.classList.add('grid-container-ready')
     document.getElementById('animate-left').style.backgroundImage = ''
     document.getElementById('animate-right').style.backgroundImage = ''
   }
-  if (state === 'error') {
-    element.classList.remove('grid-container-moving')
-    element.classList.remove('grid-container-ready')
-    element.classList.add('grid-container-error')
-  }
 }
-
-function setButtonBehavior(button: HTMLTableCellElement, func: () => void) {
-  button.onmousedown = () => { func() };
-  button.ontouchstart = () => { func() };
-}
-
 
 async function main() {
   const clawMachineActor = createActor(clawMachine)
@@ -549,7 +534,7 @@ async function main() {
       }
       case 'picking':
       case 'moving': {
-        styleMove('move')
+        styleMove('moving')
         break;
       }
       case 'clientErrored':
@@ -567,38 +552,21 @@ async function main() {
     }
   })
 
-  // add event listeners
-  const forwardbutton = <HTMLTableCellElement>document.getElementById('forward-button');
-  const backbutton = <HTMLTableCellElement>document.getElementById('back-button');
-  const rightbutton = <HTMLTableCellElement>document.getElementById('right-button');
-  const leftbutton = <HTMLTableCellElement>document.getElementById('left-button');
+  document.body.addEventListener('pointerdown', (event) => {
+    if (event.target instanceof HTMLElement && "event" in event.target.dataset) {
+      const { event: machineEvent, target, x = "0", y = "0" } = event.target.dataset;
 
-  setButtonBehavior(forwardbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: -moveDistance, y: 0 }));
-  setButtonBehavior(backbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: moveDistance, y: 0 }));
-  setButtonBehavior(rightbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: 0, y: moveDistance }));
-  setButtonBehavior(leftbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: 0, y: -moveDistance }));
-
-  const gridBackLeft = <HTMLTableCellElement>document.getElementById('grid-back-left');
-  const gridBack = <HTMLTableCellElement>document.getElementById('grid-back');
-  const gridBackRight = <HTMLTableCellElement>document.getElementById('grid-back-right');
-  const gridLeft = <HTMLTableCellElement>document.getElementById('grid-left');
-  const gridHome = <HTMLTableCellElement>document.getElementById('grid-home');
-  const gridRight = <HTMLTableCellElement>document.getElementById('grid-right');
-  const gridFrontLeft = <HTMLTableCellElement>document.getElementById('grid-front-left');
-  const gridFrontRight = <HTMLTableCellElement>document.getElementById('grid-front-right');
-
-  setButtonBehavior(gridBackLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: -1 }));
-  setButtonBehavior(gridBack, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: 0 }));
-  setButtonBehavior(gridBackRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: 1 }));
-  setButtonBehavior(gridLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 0, y: -1 }));
-  setButtonBehavior(gridHome, () => clawMachineActor.send({ type: 'move', target: 'home' }));
-  setButtonBehavior(gridRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 0, y: 1 }));
-  setButtonBehavior(gridFrontLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 1, y: -1 }));
-  setButtonBehavior(gridFrontRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 1, y: 1 }));
-
-  const dropbutton = <HTMLTableCellElement>document.getElementById('drop-button');
-
-  setButtonBehavior(dropbutton, () => clawMachineActor.send({ type: 'dropAndHome' }));
+      if (machineEvent === "move") {
+        if (target === "home") {
+          clawMachineActor.send({ type: machineEvent, target })
+        }
+        if (target === "planar" || target === "quadrant") {
+          clawMachineActor.send({ type: machineEvent, target, x: parseInt(x, 10), y: parseInt(y, 10) })
+        }
+      }
+      if (machineEvent === "dropAndHome") clawMachineActor.send({ type: machineEvent })
+    }
+  })
 
   clawMachineActor.start();
 
