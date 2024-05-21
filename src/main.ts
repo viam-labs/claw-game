@@ -1,6 +1,7 @@
 import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
+import { setup, fromPromise, assign, assertEvent, createActor } from 'xstate'
 import * as env from 'env';
 import obstacles from '../obstacles.json';
 
@@ -29,12 +30,12 @@ for (const obs of obstacles) {
   geomList.push(geom);
 }
 
-let myObstaclesInFrame: SDK.GeometriesInFrame = {
+const myObstaclesInFrame: SDK.GeometriesInFrame = {
   referenceFrame: "world",
   geometriesList: geomList,
 }
 
-let myWorldState: SDK.WorldState = {
+const myWorldState: SDK.WorldState = {
   obstaclesList: [myObstaclesInFrame],
   transformsList: [],
 }
@@ -52,12 +53,11 @@ const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
 const reachMm = 560
-const moveTimeout = 3000
 
 // if we mount the arm straight we don't need this
 const offset = 0
 const quadrantSize = (reachMm * 2) / gridSize
-let gridPositions = {
+const gridPositions = {
   '1,1': { x: 270, y: 450 },
   '1,-1': { x: 300, y: -283 },
   '-1,-1': { x: -373, y: -463 },
@@ -72,7 +72,7 @@ const useQuandrantMath = true
 // random animations will show on move if set to true
 const useAnimations = false
 
-let constraints: Constraints = {
+const constraints: Constraints = {
   orientationConstraintList: [
     { orientationToleranceDegs: 5 },
   ],
@@ -87,25 +87,248 @@ const armName: ResourceName = {
   name: 'myArm'
 }
 
-async function connect() {
-  //This is where you will your robot connection credentials. You can find this information
-  //in your Code Sample tab on your robot page. Check the Typescript code sample 
-  //to get started. :)  
-  const credential = {
-    type: 'api-key',
-    payload: robotAPIKey,
-  };
-
-  //This is the host address of the main part of your robot.
-  const host = robotLocation;
-
-  return createRobotClient({
-    host,
-    credential,
-    authEntity: robotAPIKeyID,
-    signalingAddress: 'https://app.viam.com:443',
-  });
+type ClawMachineContext = {
+  machineClient: Client,
+  motionClient: MotionClient,
+  boardClient: BoardClient,
+  armClient: ArmClient,
+  gripperClient: GripperClient,
+  error: Error | null,
 }
+
+type ClientNameParams = Record<'boardClientName' | 'armClientName' | 'motionClientName' | 'gripperClientName', string>
+
+type MoveInput = (ClawMachineContext & {
+  target: 'quadrant' | 'planar';
+  x: number;
+  y: number;
+}) | (ClawMachineContext & {
+  target: 'home'
+});
+
+type ClawMachineEvent = {
+  type: 'retry';
+} | {
+  type: 'connect';
+} | {
+  type: 'move';
+  target: 'quadrant' | 'planar';
+  x: number;
+  y: number;
+} | {
+  type: 'move';
+  target: 'home';
+} | {
+  type: 'dropAndHome';
+} | {
+  type: 'xstate.error.actor.createRobotClient',
+  error: Error
+};
+
+const clawMachine = setup({
+  "types": {
+    "context": {} as ClawMachineContext,
+    "events": {} as ClawMachineEvent
+  },
+  "actions": {
+    "assignClients": assign({
+      motionClient: ({ context }, params: ClientNameParams) =>
+        new MotionClient(context.machineClient, params.motionClientName),
+
+      boardClient: ({ context }, params: ClientNameParams) =>
+        new BoardClient(context.machineClient, params.boardClientName),
+
+      armClient: ({ context }, params: ClientNameParams) =>
+        new ArmClient(context.machineClient, params.armClientName),
+
+      gripperClient: ({ context }, params: ClientNameParams) =>
+        new GripperClient(context.machineClient, params.gripperClientName),
+    }),
+    "assignError": assign({
+      error: (_, params: { error: Error }) => params.error
+    }),
+    "assignRobotClient": assign({
+      machineClient: (_, params: { client: Client }) => {
+        return params.client;
+      }
+    }),
+    "clearError": assign({ error: null })
+  },
+  "actors": {
+    "createRobotClient": fromPromise<Client, { apiKey: string, apiKeyId: string, locationAddress: string }>(
+      async ({ input }) => {
+        const credential = {
+          type: "api-key",
+          payload: input.apiKey,
+        }
+
+        //This is the host address of the main part of your robot.
+        const host = input.locationAddress
+
+        return createRobotClient({
+          host,
+          credential,
+          authEntity: input.apiKeyId,
+          signalingAddress:
+            "https://app.viam.com:443",
+        })
+      },
+    ),
+    "moveHandler": fromPromise<void, MoveInput>(async ({ input }) => {
+      if (input.target == "quadrant") {
+        await moveToQuadrant(input.motionClient, input.armClient, input.x, input.y)
+      }
+      if (input.target == "planar") {
+        await inPlaneMove(input.motionClient, input.armClient, input.x, input.y)
+      }
+      if (input.target == "home") {
+        await home(input.motionClient, input.armClient)
+      }
+    }),
+    "dropHandler": fromPromise<void, ClawMachineContext & { moveHeight: number }>(async ({ input }) => {
+      await zMove(input.motionClient, input.armClient, 240)
+      await grab(input.boardClient, input.gripperClient)
+      await delay(1000)
+      await zMove(input.motionClient, input.armClient, input.moveHeight)
+      await home(input.motionClient, input.armClient)
+      await delay(1000)
+      await release(input.boardClient, input.gripperClient)
+    })
+  },
+}).createMachine({
+  "context": { error: null } as ClawMachineContext,
+  "id": "Claw Machine",
+  "initial": "initializing",
+  "states": {
+    "initializing": {
+      "on": {
+        "connect": {
+          "target": "connectingToMachine"
+        }
+      }
+    },
+    "connectingToMachine": {
+      "invoke": {
+        "id": "clientConnection",
+        "input": {
+          "apiKey": robotAPIKey,
+          "apiKeyId": robotAPIKeyID,
+          "locationAddress": robotLocation
+        },
+        "onDone": {
+          "target": "connected",
+          "actions": {
+            "type": "assignRobotClient",
+            "params": ({ event }) => ({ client: event.output }),
+          }
+        },
+        "onError": {
+          "target": "clientErrored",
+          "actions": {
+            "type": "assignError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }
+        },
+        "src": "createRobotClient"
+      }
+    },
+    "connected": {
+      "always": {
+        "target": "ready"
+      },
+      "entry": {
+        "type": "assignClients",
+        "params": {
+          motionClientName,
+          boardClientName,
+          armClientName,
+          gripperClientName,
+        }
+      },
+    },
+    "clientErrored": {
+      "on": {
+        "retry": {
+          "target": "initializing",
+          "actions": { type: "clearError" }
+        }
+      }
+    },
+    "ready": {
+      "on": {
+        "move": {
+          "target": "moving"
+        },
+        "dropAndHome": {
+          "target": "picking"
+        }
+      }
+    },
+    "moving": {
+      "invoke": {
+        "id": "armMover",
+        "input": ({ context, event }) => {
+          assertEvent(event, 'move')
+
+          if (event.target == 'home') {
+            return { ...context, "target": event.target };
+          }
+
+          return {
+            ...context,
+            "target": event.target,
+            "x": event.x,
+            "y": event.y,
+          }
+        },
+        "onDone": {
+          "target": "ready"
+        },
+        "onError": {
+          "target": "displayingMoveError",
+          "actions": {
+            "type": "assignError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }
+        },
+        "src": "moveHandler"
+      }
+    },
+    "picking": {
+      "invoke": {
+        "id": "picker",
+        "input": ({ context }) => ({ ...context, moveHeight }),
+        "onDone": {
+          "target": "ready"
+        },
+        "onError": {
+          "target": "displayingPickerError",
+          "actions": {
+            "type": "assignError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }
+        },
+        "src": "dropHandler"
+      }
+    },
+    "displayingMoveError": {
+      "after": {
+        "3000": {
+          "target": "ready",
+          "actions": { type: "clearError" }
+        }
+      }
+    },
+    "displayingPickerError": {
+      "after": {
+        "2000": {
+          "target": "ready",
+          "actions": { type: "clearError" }
+        }
+      }
+    }
+  }
+})
 
 //Creating a delay function for timing 
 function delay(time: number) {
@@ -275,123 +498,85 @@ async function release(boardClient: BoardClient, gripperClient: GripperClient | 
   }
 }
 
-async function main() {
-  // Connect to client
-  let client: Client;
-  try {
-    client = await connect();
-    console.log('connected!');
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-  const motionClient = new MotionClient(client, motionClientName);
-  const boardClient = new BoardClient(client, boardClientName);
-  const armClient = new ArmClient(client, armClientName);
-  const gripperClient = new GripperClient(client, gripperClientName);
+function applyErrorClass(element: HTMLElement) {
+  element.classList.add("error");
+}
 
-  // Add this function at the top of your main.ts file
-  function applyErrorClass(element: HTMLElement) {
-    element.classList.add("error");
-  }
-
-  // Update the onclick handlers in the main function:
-  let useTouch = false;
-  let isMoving = false;
-
-  function styleMove(state) {
-    let element = document.getElementById('grid-container')
-    if (state === 'move') {
-      element.classList.remove('grid-container-error')
-      element.classList.remove('grid-container-ready')
-      element.classList.add('grid-container-moving')
-      // randomly animate
-      if (useAnimations) {
-        let rand = Math.floor(Math.random() * 50) + 1
-        if (rand < 20) {
-          document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
-          document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
-        }
+function styleMove(state: 'move' | 'ready' | 'error') {
+  let element = document.getElementById('grid-container')
+  if (element == null) return;
+  if (state === 'move') {
+    element.classList.remove('grid-container-error')
+    element.classList.remove('grid-container-ready')
+    element.classList.add('grid-container-moving')
+    // randomly animate
+    if (useAnimations) {
+      let rand = Math.floor(Math.random() * 50) + 1
+      if (rand < 20) {
+        document.getElementById('animate-left').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
+        document.getElementById('animate-right').style.backgroundImage = "url(images/animate/animate" + rand + ".webp)"
       }
-    } else if (state === 'ready') {
-      element.classList.remove('grid-container-error')
-      element.classList.remove('grid-container-moving')
-      element.classList.add('grid-container-ready')
-      document.getElementById('animate-left').style.backgroundImage = ''
-      document.getElementById('animate-right').style.backgroundImage = ''
-    } else if (state === 'error') {
-      element.classList.remove('grid-container-moving')
-      element.classList.remove('grid-container-ready')
-      element.classList.add('grid-container-error')
     }
   }
-
-  // Helper functions to define button behavior
-  async function mouseDown(func: () => Promise<boolean>) {
-    if (isMoving) return
-    if (useTouch) return
-    styleMove('move')
-    isMoving = true
-    let success = await func()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  async function touchStart(func: () => Promise<boolean>) {
-    if (isMoving) return
-    styleMove('move')
-    isMoving = true
-    useTouch = true
-    let success = await func()
-    if (success) {
-      styleMove('ready')
-      isMoving = false
-    }
-  };
-
-  function setButtonBehavior(button: HTMLTableCellElement, func: () => Promise<boolean>) {
-    button.onmousedown = async () => { mouseDown(func) };
-    button.ontouchstart = async () => { touchStart(func) };
+  if (state === 'ready') {
+    element.classList.remove('grid-container-error')
+    element.classList.remove('grid-container-moving')
+    element.classList.add('grid-container-ready')
+    document.getElementById('animate-left').style.backgroundImage = ''
+    document.getElementById('animate-right').style.backgroundImage = ''
   }
+  if (state === 'error') {
+    element.classList.remove('grid-container-moving')
+    element.classList.remove('grid-container-ready')
+    element.classList.add('grid-container-error')
+  }
+}
 
-  // Define buttons for incremental movement in plane
-  async function planarMoveHandler(button: HTMLTableCellElement, x: number, y: number) {
-    try {
-      await inPlaneMove(motionClient, armClient, x, y);
-      if (button.classList.contains('custom-box-shadow-active')) { await planarMoveHandler(button, x, y) };
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout(() => { styleMove('ready'); isMoving = false; }, moveTimeout)
-      return false
+function setButtonBehavior(button: HTMLTableCellElement, func: () => void) {
+  button.onmousedown = () => { func() };
+  button.ontouchstart = () => { func() };
+}
+
+
+async function main() {
+  const clawMachineActor = createActor(clawMachine)
+
+  clawMachineActor.subscribe(snapshot => {
+    switch (snapshot.value) {
+      case 'ready': {
+        styleMove('ready')
+        break;
+      }
+      case 'picking':
+      case 'moving': {
+        styleMove('move')
+        break;
+      }
+      case 'clientErrored':
+      case 'displayingMoveError':
+      case 'displayingPickerError': {
+        console.error(snapshot.context.error)
+        styleMove('error')
+        break;
+      }
+      case 'initializing':
+      case 'connectingToMachine':
+      case 'connected': {
+        break;
+      }
     }
-    return true
-  };
+  })
 
+  // add event listeners
   const forwardbutton = <HTMLTableCellElement>document.getElementById('forward-button');
   const backbutton = <HTMLTableCellElement>document.getElementById('back-button');
   const rightbutton = <HTMLTableCellElement>document.getElementById('right-button');
   const leftbutton = <HTMLTableCellElement>document.getElementById('left-button');
 
-  setButtonBehavior(forwardbutton, () => planarMoveHandler(forwardbutton, -moveDistance, 0));
-  setButtonBehavior(backbutton, () => planarMoveHandler(backbutton, moveDistance, 0));
-  setButtonBehavior(rightbutton, () => planarMoveHandler(rightbutton, 0, moveDistance));
-  setButtonBehavior(leftbutton, () => planarMoveHandler(leftbutton, 0, -moveDistance));
-
-  // Define buttons for movement between quadrants
-  async function moveHandler(func: Promise<void>) {
-    try {
-      await func;
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout(() => { styleMove('ready'); isMoving = false; }, moveTimeout)
-      return false
-    }
-    return true
-  }
+  setButtonBehavior(forwardbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: -moveDistance, y: 0 }));
+  setButtonBehavior(backbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: moveDistance, y: 0 }));
+  setButtonBehavior(rightbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: 0, y: moveDistance }));
+  setButtonBehavior(leftbutton, () => clawMachineActor.send({ type: 'move', target: 'planar', x: 0, y: -moveDistance }));
 
   const gridBackLeft = <HTMLTableCellElement>document.getElementById('grid-back-left');
   const gridBack = <HTMLTableCellElement>document.getElementById('grid-back');
@@ -402,44 +587,22 @@ async function main() {
   const gridFrontLeft = <HTMLTableCellElement>document.getElementById('grid-front-left');
   const gridFrontRight = <HTMLTableCellElement>document.getElementById('grid-front-right');
 
-  setButtonBehavior(gridBackLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, -1)));
-  setButtonBehavior(gridBack, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, 0)));
-  setButtonBehavior(gridBackRight, () => moveHandler(moveToQuadrant(motionClient, armClient, -1, 1)));
-  setButtonBehavior(gridLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, 0, -1)));
-  setButtonBehavior(gridHome, () => moveHandler(home(motionClient, armClient)))
-  setButtonBehavior(gridRight, () => moveHandler(moveToQuadrant(motionClient, armClient, 0, 1)));
-  setButtonBehavior(gridFrontLeft, () => moveHandler(moveToQuadrant(motionClient, armClient, 1, -1)));
-  setButtonBehavior(gridFrontRight, () => moveHandler(moveToQuadrant(motionClient, armClient, 1, 1)));
-
-  // Define button to grab and return object
-  async function dropHandler() {
-    try {
-      await zMove(motionClient, armClient, 240);
-      await grab(boardClient, gripperClient);
-      await delay(1000);
-      await zMove(motionClient, armClient, moveHeight);
-      await home(motionClient, armClient);
-      await delay(1000);
-      await release(boardClient, gripperClient);
-    } catch (error) {
-      console.log(error);
-      styleMove('error')
-      setTimeout(() => { styleMove('ready'); isMoving = false; }, 2000)
-      return false
-    }
-    return true
-  }
+  setButtonBehavior(gridBackLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: -1 }));
+  setButtonBehavior(gridBack, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: 0 }));
+  setButtonBehavior(gridBackRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: -1, y: 1 }));
+  setButtonBehavior(gridLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 0, y: -1 }));
+  setButtonBehavior(gridHome, () => clawMachineActor.send({ type: 'move', target: 'home' }));
+  setButtonBehavior(gridRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 0, y: 1 }));
+  setButtonBehavior(gridFrontLeft, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 1, y: -1 }));
+  setButtonBehavior(gridFrontRight, () => clawMachineActor.send({ type: 'move', target: 'quadrant', x: 1, y: 1 }));
 
   const dropbutton = <HTMLTableCellElement>document.getElementById('drop-button');
 
-  setButtonBehavior(dropbutton, () => dropHandler());
+  setButtonBehavior(dropbutton, () => clawMachineActor.send({ type: 'dropAndHome' }));
 
+  clawMachineActor.start();
 
-  forwardbutton.disabled = false;
-  backbutton.disabled = false;
-  rightbutton.disabled = false;
-  leftbutton.disabled = false;
-  dropbutton.disabled = false;
+  clawMachineActor.send({ type: 'connect' })
 }
 
 main();
