@@ -16,6 +16,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@sentry/browser": "^8.3.0",
     "@viamrobotics/sdk": "^0.15.0",
     "autoprefixer": "^10.4.14",
     "nes.css": "^2.3.0",

@@ -13,6 +13,8 @@ GRIPPER_CLIENT_NAME="myGripper"
 MOTION_CLIENT_NAME="builtin"
 ```
 
+If you want to enable error monitoring in the application, the [Sentry DSN](https://docs.sentry.io/platforms/javascript/#configure) as `SENTRY_DSN` in the `.env` file.
+
 Simple interface: run `npm run start-simple` (environment variables must be set as per above).
 
 Edit `src/main.ts` to change the robot logic being run. Edit `static/index.html` to change the layout of the app.
