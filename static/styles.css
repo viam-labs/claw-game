@@ -59,15 +59,15 @@ div {
     padding: 0px;
 }
 
-.grid-container-ready {
+.grid-container[data-state="ready"] {
     background-color: #6ded8a;
 }
 
-.grid-container-moving {
+.grid-container[data-state="moving"] {
     background-color: #ffee99;
 }
 
-.grid-container-error {
+.grid-container[data-state="error"] {
     background-color: #aa0000;
 }
 
@@ -83,7 +83,6 @@ div {
     width: 142px;
     height: 142px;
     background-image: url('images/8bit-ball.png');
-    //background-size: contain;
     background-repeat: no-repeat;
     background-origin: content-box;
     background-size: 100% 100%;

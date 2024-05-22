@@ -1,92 +1,132 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-    <title>THE CLAW</title>
-    <link rel="icon" href="favicon.ico" />
-    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
-  </head>
-  <body class="body">
-    <div id="animate-left" class="animate-left"></div>
-    <div id="grid-container" class="nes-container with-title is-centered grid-container grid-container-ready">
-      <div id="forward-button" class="grid-arrow grid-arrow-up"></div>
-      <table>
+
+<head>
+  <meta name="viewport"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+  <title>THE CLAW</title>
+  <link rel="icon" href="favicon.ico" />
+  <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+
+<body class="body">
+  <div id="animate-left" class="animate-left"></div>
+  <div id="grid-container" class="nes-container with-title is-centered grid-container" data-state="ready">
+    <div id="forward-button" class="grid-arrow grid-arrow-up" data-event="move" data-target="planar" data-x="-20"
+      data-y="0"></div>
+    <table>
       <tr>
-        <td class="grid-border"><div id="left-button" class="grid-arrow grid-arrow-left"></div></td>
+        <td class="grid-border">
+          <div id="left-button" class="grid-arrow grid-arrow-left" data-event="move" data-target="planar" data-x="0"
+            data-y="-20"></div>
+        </td>
         <td>
-    <div class="nes-table-responsive">
-      <table class="nes-table is-centered grid-table">
-        <tbody>
-          <tr>
-            <td><div id="grid-back-left" class="grid-quad"></div></td>
-            <td><div id="grid-back" class="grid-quad"></div></td>
-            <td><div id="grid-back-right" class="grid-quad"></div></td>
-          </tr>
-          <tr>
-            <td><div id="grid-left" class="grid-quad"></div></td>
-            <td><div class="grid-claw" id="drop-button"></div></td>
-            <td><div id="grid-right" class="grid-quad"></div></td>
-          </tr>
-          <tr>
-            <td><div id="grid-front-left" class="grid-quad"></div></td>
-            <td class="grid-drop"><div id="grid-home"></div></td>
-            <td><div id="grid-front-right" class="grid-quad"></div></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    </td>
-    <td class="grid-border"><div id="right-button" class="grid-arrow grid-arrow-right"></div></td>
-    </tr>
-  </tr></table>
-  <div id="back-button" class="grid-arrow grid-arrow-down"></div>
+          <div class="nes-table-responsive">
+            <table class="nes-table is-centered grid-table">
+              <tbody>
+                <tr>
+                  <td>
+                    <div id="grid-back-left" class="grid-quad" data-event="move" data-target="quadrant" data-x="-1"
+                      data-y="-1"></div>
+                  </td>
+                  <td>
+                    <div id="grid-back" class="grid-quad" data-event="move" data-target="quadrant" data-x="-1"
+                      data-y="0"></div>
+                  </td>
+                  <td>
+                    <div id="grid-back-right" class="grid-quad" data-event="move" data-target="quadrant" data-x="-1"
+                      data-y="1"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="grid-left" class="grid-quad" data-event="move" data-target="quadrant" data-x="0"
+                      data-y="-1"></div>
+                  </td>
+                  <td>
+                    <div class="grid-claw" id="drop-button" data-event="dropAndHome"></div>
+                  </td>
+                  <td>
+                    <div id="grid-right" class="grid-quad" data-event="move" data-target="quadrant" data-x="0"
+                      data-y="1"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="grid-front-left" class="grid-quad" data-event="move" data-target="quadrant" data-x="1"
+                      data-y="-1"></div>
+                  </td>
+                  <td class="grid-drop">
+                    <div id="grid-home" data-event="move" data-target="home"></div>
+                  </td>
+                  <td>
+                    <div id="grid-front-right" class="grid-quad" data-event="move" data-target="quadrant" data-x="1"
+                      data-y="1"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </td>
+        <td class="grid-border">
+          <div id="right-button" class="grid-arrow grid-arrow-right" data-event="move" data-target="planar" data-x="0"
+            data-y="20"></div>
+        </td>
+      </tr>
+      </tr>
+    </table>
+    <div id="back-button" class="grid-arrow grid-arrow-down" data-event="move" data-target="planar" data-x="20"
+      data-y="0"></div>
   </div>
   <table>
-    <tr><td>
-  <img id="avatar" src="images/robot-head-2.svg" class="grid-avatar"/>
-  </td>  
-  <td>
-  <section class="message -left">
-    <!-- Balloon -->
-    <div class="nes-balloon from-left">
-      <p id="instructions"></p>
-    </div>
-  </section>
-</td></tr>  
-</table>
-<div id="animate-right" class="animate-right"></div>
+    <tr>
+      <td>
+        <img id="avatar" src="images/robot-head-2.svg" class="grid-avatar" />
+      </td>
+      <td>
+        <section class="message -left">
+          <!-- Balloon -->
+          <div class="nes-balloon from-left">
+            <p id="instructions"></p>
+          </div>
+        </section>
+      </td>
+    </tr>
+  </table>
+  <div id="animate-right" class="animate-right"></div>
 
-   
-    <script>
-      // avatar text
-      function typeWriter(txt, i, speed) {
-        let thisSpeed = speed
-        let el = document.getElementById("instructions")
-        if (i == 0) {
-          // clear content and swap avatar
-          el.innerHTML = ''
-          //let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
-          //document.getElementById("avatar").src = randImg
-        }
-        if (i < txt.length) {
-          el.innerHTML += txt.charAt(i);
-          if (txt.charAt(i-1) == '.') {
-            el.innerHTML = ''
-          } else if (txt.charAt(i) == '.') {
-            thisSpeed = 1000
-          }
-          i++;
-        } else if (i == txt.length) {
-          i = 0;
-          thisSpeed = 4000
-        }
-        setTimeout(function(){typeWriter(txt, i, speed)}, thisSpeed);
+
+  <script>
+    // avatar text
+    function typeWriter(txt, i, speed) {
+      let thisSpeed = speed
+      let el = document.getElementById("instructions")
+      if (i == 0) {
+        // clear content and swap avatar
+        el.innerHTML = ''
+        //let randImg = 'images/avatar' + Math.floor(Math.random() * (9 - 1 + 1) + 1) + '.png'
+        //document.getElementById("avatar").src = randImg
       }
-      typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the claw to drop and grab. Good luck, and have fun!', 0, 60)
-    </script>
-    <script type="module" src="main.js">
-    </script>
-  </body>
+      if (i < txt.length) {
+        el.innerHTML += txt.charAt(i);
+        if (txt.charAt(i - 1) == '.') {
+          el.innerHTML = ''
+        } else if (txt.charAt(i) == '.') {
+          thisSpeed = 1000
+        }
+        i++;
+      } else if (i == txt.length) {
+        i = 0;
+        thisSpeed = 4000
+      }
+      setTimeout(function () {typeWriter(txt, i, speed)}, thisSpeed);
+    }
+    typeWriter('Tap in the grid to move to that area. Tap the arrows for smaller movements. Tap the claw to drop and grab. Good luck, and have fun!', 0, 60)
+  </script>
+  <script type="module" src="main.js">
+  </script>
+</body>
+
 </html>
