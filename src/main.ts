@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
 import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
@@ -47,6 +48,7 @@ const armClientName = env.ARM_CLIENT_NAME
 const boardClientName = env.BOARD_CLIENT_NAME
 const gripperClientName = env.GRIPPER_CLIENT_NAME
 const motionClientName = env.MOTION_CLIENT_NAME
+const sentryDSN = env.SENTRY_DSN
 const grabberPin = '8'
 const ignoreInterrupts = true
 const moveHeight = 500
@@ -152,7 +154,10 @@ const clawMachine = setup({
       }
     }),
     "clearError": assign({ error: null }),
-    "styleMove": (_, params: { state: 'moving' | 'ready' | 'error' }) => { },
+    "styleMove": (_, _params: { state: 'moving' | 'ready' | 'error' }) => { },
+    "logError": (_, params: { error: Error }) => {
+      console.error(params.error)
+    }
   },
   "actors": {
     "createRobotClient": fromPromise<Client, { apiKey: string, apiKeyId: string, locationAddress: string }>(
@@ -224,10 +229,13 @@ const clawMachine = setup({
         },
         "onError": {
           "target": "clientErrored",
-          "actions": {
+          "actions": [{
             "type": "assignError",
             "params": ({ event }) => ({ error: event.error as Error })
-          }
+          }, {
+            "type": "logError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }]
         },
         "src": "createRobotClient"
       }
@@ -289,10 +297,13 @@ const clawMachine = setup({
         },
         "onError": {
           "target": "displayingMoveError",
-          "actions": {
+          "actions": [{
             "type": "assignError",
             "params": ({ event }) => ({ error: event.error as Error })
-          }
+          }, {
+            "type": "logError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }]
         },
         "src": "moveHandler"
       }
@@ -307,10 +318,13 @@ const clawMachine = setup({
         },
         "onError": {
           "target": "displayingPickerError",
-          "actions": {
+          "actions": [{
             "type": "assignError",
             "params": ({ event }) => ({ error: event.error as Error })
-          }
+          }, {
+            "type": "logError",
+            "params": ({ event }) => ({ error: event.error as Error })
+          }]
         },
         "src": "dropHandler"
       }
@@ -516,10 +530,16 @@ function styleMove(_, params: { state: 'moving' | 'ready' | 'error' }) {
   }
 }
 
-async function main() {
+function main() {
+  const errorActions = sentryDSN ? {
+    logError: (_, params: { error: Error }) => {
+      Sentry.captureException(params.error);
+    }
+  } : {};
   const clawMachineActor = createActor(clawMachine.provide({
     actions: {
-      styleMove
+      styleMove,
+      ...errorActions,
     }
   }))
 
@@ -546,6 +566,12 @@ async function main() {
   clawMachineActor.start();
 
   clawMachineActor.send({ type: 'connect' })
+}
+
+if (sentryDSN) {
+  Sentry.init({
+    dsn: sentryDSN,
+  })
 }
 
 main();
