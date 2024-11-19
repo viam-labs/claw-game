@@ -65,9 +65,10 @@ async function connect() {
   //This is where you will use your robot credentials. You can find this information
   //in your Code Sample tab on your robot page. Check the Typescript code sample 
   //to get started. :)  
-  const credential = {
+  const credentials = {
     type: 'api-key',
     payload: robotAPIKey,
+    authEntity: robotAPIKeyID,
   };
 
   //This is the host address of the main part of your robot.
@@ -75,8 +76,7 @@ async function connect() {
 
   return createRobotClient({
     host,
-    credential,
-    authEntity: robotAPIKeyID,
+    credentials,
     signalingAddress: 'https://app.viam.com:443',
   });
 }

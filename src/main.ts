@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser';
 import { Client, GripperClient, BoardClient, MotionClient, ArmClient, createRobotClient } from '@viamrobotics/sdk';
-import type { ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
+import type { Credential, ResourceName, Constraints, Pose } from '@viamrobotics/sdk';
 import * as SDK from '@viamrobotics/sdk';
 import { setup, fromPromise, assign, assertEvent, createActor } from 'xstate'
 import * as env from 'env';
@@ -162,9 +162,10 @@ const clawMachine = setup({
   "actors": {
     "createRobotClient": fromPromise<Client, { apiKey: string, apiKeyId: string, locationAddress: string }>(
       async ({ input }) => {
-        const credential = {
+        const credentials: Credential = {
           type: "api-key",
           payload: input.apiKey,
+          authEntity: input.apiKeyId,
         }
 
         //This is the host address of the main part of your robot.
@@ -172,8 +173,7 @@ const clawMachine = setup({
 
         return createRobotClient({
           host,
-          credential,
-          authEntity: input.apiKeyId,
+          credentials,
           signalingAddress:
             "https://app.viam.com:443",
         })
