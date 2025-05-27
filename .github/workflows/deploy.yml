@@ -52,7 +52,7 @@ jobs:
           ./viam-cli login api-key --key-id "$API_KEY_ID" --key "$API_KEY"
       - name: Build module locally
         run: |
-          ./viam-cli module build local
+          sudo -Hu testbot bash -lc './viam-cli module build local'
       - name: Upload viamrtsp module to registry
         uses: viamrobotics/upload-module@v1
         with:
