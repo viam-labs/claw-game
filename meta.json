@@ -1,0 +1,26 @@
+{
+  "$schema": "https://dl.viam.dev/module.schema.json",
+  "module_id": "devrel:claw-game-app",
+  "visibility": "public",
+  "url": "https://github.com/viam-labs/claw-game",
+  "description": "Viam module running a web server with a web app to control a robotic arm claw game.",
+  "models": [
+    {
+      "api": "rdk:service:generic",
+      "model": "devrel:claw-game:webap",
+      "markdown_link": "README.md#webserver-module-configuration"
+    }
+  ],
+  "entrypoint": "./bin/webserver",
+  "first_run": "",
+  "build": {
+    "setup": "./scripts/setup.sh",
+    "build": "make module.tar.gz",
+    "path": "module.tar.gz",
+    "arch": [
+      "linux/arm64",
+      "linux/amd64",
+      "darwin/arm64"
+    ]
+  }
+}

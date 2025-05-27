@@ -1,0 +1,53 @@
+name: Build & publish module to registry
+
+on:
+  release:
+    types:
+      - released
+  workflow_dispatch:
+
+jobs:
+  publish:
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            target_os: linux
+            target_arch: amd64
+            docker_image: ghcr.io/viamrobotics/antique2:amd64-cache
+          - platform: linux/arm64
+            runner: buildjet-8vcpu-ubuntu-2204-arm
+            target_os: linux
+            target_arch: arm64
+            docker_image: ghcr.io/viamrobotics/antique2:arm64-cache
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.docker_image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download viam-cli
+        env:
+          TARGET_OS: ${{ matrix.target_os }}
+          TARGET_ARCH: ${{ matrix.target_arch }}
+        run: |
+          curl -L -o ./viam-cli "https://storage.googleapis.com/packages.viam.com/apps/viam-cli/viam-cli-latest-$TARGET_OS-$TARGET_ARCH"
+          chmod +x ./viam-cli
+      - name: Update module meta.json in registry
+        env:
+          API_KEY_ID: ${{ secrets.viam_key_id }}
+          API_KEY: ${{ secrets.viam_key_value }}
+        run: |
+          ./viam-cli login api-key --key-id "$API_KEY_ID" --key "$API_KEY"
+          ./viam-cli module update
+      - name: Build module locally
+        run: |
+          ./viam-cli module build local
+      - name: Upload viamrtsp module to registry
+        uses: viamrobotics/upload-module@v1
+        with:
+          meta-path: meta.json
+          module-path: module.tar.gz
+          platform: ${{ matrix.platform }}
+          version: ${{ github.ref_name }}
+          key-id: ${{ secrets.viam_key_id }}
+          key-value: ${{ secrets.viam_key_value }}
