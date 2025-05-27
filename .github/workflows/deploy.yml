@@ -22,8 +22,20 @@ jobs:
             target_arch: arm64
             docker_image: ghcr.io/viamrobotics/antique2:arm64-cache
     runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.docker_image }}
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --platform ${{ matrix.platform }}
+      volumes:
+      # otherwise we get a 'read-only filesystem' error when symlinking over this
+      - /tmp/node20:/__e/node20
     steps:
+      - name: override nodejs
+        # note: the antique image intentionally has an old ubuntu with old GLIBC; github's node requires a newer one.
+        # actions require this /__e/node20/bin/node file, so we override it.
+        run: |
+          mkdir -p /__e/node20/bin/
+          ln --force --symbolic $(which node) /__e/node20/bin/node
+          /__e/node20/bin/node --version
       - uses: actions/checkout@v4
       - name: Download viam-cli
         env:
