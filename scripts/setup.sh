@@ -2,10 +2,6 @@
 
 set -euo pipefail
 
-export PATH=$PATH:$HOME/.local/bin
+npm install
 
-curl https://mise.run | sh
-
-mise exec node@22 -- npm install
-
-mise exec node@22 -- npm run build:module
+npm run build:module

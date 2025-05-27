@@ -527,8 +527,8 @@ function styleMove(_, params: { state: 'moving' | 'ready' | 'error' }) {
 }
 
 async function main() {
-  const port = window.location.port
-  const config = await fetch(`http://localhost:${port}/config.json`).then(res => res.json())
+  const host = window.location.host
+  const config = await fetch(`http://${host}/config.json`).then(res => res.json())
   const armClientName = config.attributes.arm as string
   const boardClientName = config.attributes.board as string
   const gripperClientName = config.attributes.gripper as string
