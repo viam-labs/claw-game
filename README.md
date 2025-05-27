@@ -39,3 +39,47 @@ Basic CLI script for testing the claw game.  You can run individual commands, fo
 Or, you can run sequences of commands like:
 
 `python3 CLI-test.py --location mylocation --apikeyid VIAM_API_KEY_ID --apikey VIAM_API_KEY --command sequence --sequence grab,sleep,release,sleep,grab,sleep,release`
+
+## Webserver module configuration
+
+### Attributes
+
+The following attributes are available for this model:
+
+| Name                | Type    | Inclusion | Description                                                                         |
+| ------------------- | ------- | --------- | ----------------------------------------------------------------------------------- |
+| `port`              | integer | Optional  | Configure the port the webserver listens on. Default is `8888`                      |
+| `arm`            | string  | Required  | The name of the arm component you want to use                      |
+| `board`            | string  | Required  | The name of the board component you want to use                      |
+| `gripper`            | string  | Required  | The name of the gripper component you want to use                      |
+| `motion`            | string  | Required  | The name of the motion service you want to use, typically this is "builtin"                      |
+| `sentry`            | string  | Optional  | The DSN for Sentry error monitoring                      |
+
+### Example configuration:
+
+```json
+{
+  "port": 33333,
+  "arm": "arm-1",
+  "board": "board-1",
+  "gripper": "gripper-1",
+  "motion": "builtin",
+  "sentry": "sentryDSN"
+}
+```
+
+## Less obvious features
+
+You can access the Viam configuration in your frontend code using the `http://.../config.json` endpoint.
+
+```json
+{
+  "name": "ui",
+  "api": "rdk:service:generic",
+  "model": "devrel:claw-game:webapp",
+  "attributes": {
+    "arm": "arm-1",
+    "board": "board-1"
+  }
+}
+```

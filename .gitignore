@@ -136,3 +136,5 @@ node_modules/
 **/main-simple.js*
 
 **/main.js*
+module.tar.gz
+bin/
