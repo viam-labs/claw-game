@@ -24,20 +24,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download viam-cli
-        env:
-          TARGET_OS: ${{ matrix.target_os }}
-          TARGET_ARCH: ${{ matrix.target_arch }}
-        run: |
-          curl -L -o ./viam-cli "https://storage.googleapis.com/packages.viam.com/apps/viam-cli/viam-cli-latest-$TARGET_OS-$TARGET_ARCH"
-          chmod +x ./viam-cli
-      - name: Authenticate Viam CLI
-        env:
-          API_KEY_ID: ${{ secrets.viam_key_id }}
-          API_KEY: ${{ secrets.viam_key_value }}
-        run: |
-          ./viam-cli login api-key --key-id "$API_KEY_ID" --key "$API_KEY"
-          ./viam-cli module update
       - name: Pull Docker image
         run: docker pull ${{ matrix.docker_image }}
         shell: bash
