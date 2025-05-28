@@ -22,20 +22,7 @@ jobs:
             target_arch: arm64
             docker_image: ghcr.io/viamrobotics/antique2:arm64-cache
     runs-on: ${{ matrix.runner }}
-    container:
-      image: ${{ matrix.docker_image }}
-      options: --platform ${{ matrix.platform }}
-      volumes:
-      # otherwise we get a 'read-only filesystem' error when symlinking over this
-      - /tmp/node20:/__e/node20
     steps:
-      - name: override nodejs
-        # note: the antique image intentionally has an old ubuntu with old GLIBC; github's node requires a newer one.
-        # actions require this /__e/node20/bin/node file, so we override it.
-        run: |
-          mkdir -p /__e/node20/bin/
-          ln --force --symbolic $(which node) /__e/node20/bin/node
-          /__e/node20/bin/node --version
       - uses: actions/checkout@v4
       - name: Download viam-cli
         env:
@@ -50,10 +37,30 @@ jobs:
           API_KEY: ${{ secrets.viam_key_value }}
         run: |
           ./viam-cli login api-key --key-id "$API_KEY_ID" --key "$API_KEY"
-      - name: Build module locally
+          ./viam-cli module update
+      - name: Pull Docker image
+        run: docker pull ${{ matrix.docker_image }}
+        shell: bash
+      - name: Build and package using Docker
         run: |
-          sudo -Hu testbot bash -lc './viam-cli module build local'
-      - name: Upload viamrtsp module to registry
+          docker run \
+            -e TARGET_OS=${{ matrix.target_os }} \
+            -e TARGET_ARCH=${{ matrix.target_arch }} \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            ${{ matrix.docker_image }} \
+            sh -c "./scripts/setup.sh && make module.tar.gz"
+        shell: bash
+      - name: Verify module.tar.gz exists recursively
+        run: |
+          if find . -name module.tar.gz | grep -q .; then
+            echo "module.tar.gz exists"
+          else
+            echo "module.tar.gz does not exist"
+            exit 1
+          fi
+        shell: bash
+      - name: Upload claw-game webserver module to registry
         uses: viamrobotics/upload-module@v1
         with:
           meta-path: meta.json
