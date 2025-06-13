@@ -1,102 +1,122 @@
 [
-    {
-        "label": "hole",
-        "translation": {
-            "x": 470, 
-            "y": 30, 
-            "z": 0
-        },
-        "orientation": {
-            "type": "ov_degrees",
-            "value": {
-                "x": 0,
-                "y": 0,
-                "z": 1,
-                "th": 0
-            }
-        },
-        "x": 250, 
-        "y": 360, 
-        "z": 140
+  {
+    "label": "hole",
+    "translation": {
+      "x": 470,
+      "y": 30,
+      "z": 70
     },
-    {
-        "label": "frontWall",
-        "translation": {
-            "x": 600, 
-            "y": 0, 
-            "z": 0
-        },
-        "orientation": {
-            "type": "ov_degrees",
-            "value": {
-                "x": 0,
-                "y": 0,
-                "z": 1,
-                "th": 0
-            }
-        },
-        "x": 15, 
-        "y": 2000, 
-        "z": 1000
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "th": 0
+      }
     },
-    {
-        "label": "backWall",
-        "translation": {
-            "x": -660, 
-            "y": 0, 
-            "z": 0
-        },
-        "orientation": {
-            "type": "ov_degrees",
-            "value": {
-                "x": 0,
-                "y": 0,
-                "z": 1,
-                "th": 0
-            }
-        },
-        "x": 15, 
-        "y": 2000, 
-        "z": 1000
+    "x": 250,
+    "y": 360,
+    "z": 140
+  },
+  {
+    "label": "frontWall",
+    "translation": {
+      "x": 620,
+      "y": 0,
+      "z": 500
     },
-    {
-        "label": "rightWall",
-        "translation": {
-            "x": 0, 
-            "y": 700, 
-            "z": 0
-        },
-        "orientation": {
-            "type": "ov_degrees",
-            "value": {
-                "x": 0,
-                "y": 0,
-                "z": 1,
-                "th": 90
-            }
-        },
-        "x": 15, 
-        "y": 2000, 
-        "z": 1000
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "th": 0
+      }
     },
-    {
-        "label": "leftWall",
-        "translation": {
-            "x": 0, 
-            "y": -680, 
-            "z": 0
-        },
-        "orientation": {
-            "type": "ov_degrees",
-            "value": {
-                "x": 0,
-                "y": 0,
-                "z": 1,
-                "th": 90
-            }
-        },
-        "x": 15, 
-        "y": 2000, 
-        "z": 1000
-    }
+    "x": 15,
+    "y": 2000,
+    "z": 1000
+  },
+  {
+    "label": "backWall",
+    "translation": {
+      "x": -600,
+      "y": 0,
+      "z": 500
+    },
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "th": 0
+      }
+    },
+    "x": 15,
+    "y": 2000,
+    "z": 1000
+  },
+  {
+    "label": "rightWall",
+    "translation": {
+      "x": 0,
+      "y": 600,
+      "z": 500
+    },
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "th": 90
+      }
+    },
+    "x": 15,
+    "y": 2000,
+    "z": 1000
+  },
+  {
+    "label": "leftWall",
+    "translation": {
+      "x": 0,
+      "y": -550,
+      "z": 500
+    },
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "th": 90
+      }
+    },
+    "x": 15,
+    "y": 2000,
+    "z": 1000
+  },
+  {
+    "label": "ceiling",
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 1000
+    },
+    "orientation": {
+      "type": "ov_degrees",
+      "value": {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "th": 0
+      }
+    },
+    "x": 15,
+    "y": 2000,
+    "z": 1000
+  }
 ]

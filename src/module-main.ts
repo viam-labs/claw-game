@@ -4,7 +4,7 @@ import type { Credential, ResourceName, Constraints, Pose } from '@viamrobotics/
 import * as SDK from '@viamrobotics/sdk';
 import { parse as parseCookies } from 'cookie-es';
 import { setup, fromPromise, assign, assertEvent, createActor } from 'xstate'
-import obstacles from '../obstacles.json';
+import obstacles from '../obstacles-office.json';
 
 // globals
 const geomList: SDK.Geometry[] = [];
@@ -20,25 +20,28 @@ for (const obs of obstacles) {
       oZ: obs.orientation.value.z,
       theta: obs.orientation.value.th
     },
-    box: {
-      dimsMm: {
-        x: obs.x,
-        y: obs.y,
-        z: obs.z,
+    geometryType: {
+      case: "box",
+      value: {
+        dimsMm: {
+          x: obs.x,
+          y: obs.y,
+          z: obs.z,
+        }
       }
-    }
+    },
   }
   geomList.push(geom);
 }
 
 const myObstaclesInFrame: SDK.GeometriesInFrame = {
   referenceFrame: "world",
-  geometriesList: geomList,
+  geometries: geomList,
 }
 
 const myWorldState: SDK.WorldState = {
-  obstaclesList: [myObstaclesInFrame],
-  transformsList: [],
+  obstacles: [myObstaclesInFrame],
+  transforms: [],
 }
 
 const cookieStore = parseCookies(document.cookie)
@@ -47,7 +50,7 @@ const robotAPIKey = cookieStore['api-key']
 const robotAPIKeyID = cookieStore['api-key-id']
 const robotHost = cookieStore['host']
 
-const grabberPin = '8'
+const grabberPin = '7'
 const ignoreInterrupts = true
 const moveHeight = 500
 const gridSize = 3
@@ -72,11 +75,11 @@ const useQuandrantMath = true
 const useAnimations = false
 
 const constraints: Constraints = {
-  orientationConstraintList: [
+  orientationConstraint: [
     { orientationToleranceDegs: 5 },
   ],
-  linearConstraintList: [],
-  collisionSpecificationList: [],
+  linearConstraint: [],
+  collisionSpecification: [],
 };
 
 const getArmName = (name: string): ResourceName => ({
@@ -94,6 +97,7 @@ type ClawMachineContext = ClientNameParams & {
   boardClient: BoardClient,
   armClient: ArmClient,
   gripperClient: GripperClient,
+  pickingHeight: number,
   error: Error | null,
 }
 
@@ -128,7 +132,7 @@ const clawMachine = setup({
   "types": {
     "context": {} as ClawMachineContext,
     "events": {} as ClawMachineEvent,
-    "input": {} as ClientNameParams,
+    "input": {} as ClientNameParams & { pickingHeight: number },
   },
   "actions": {
     "assignClients": assign({
@@ -190,7 +194,7 @@ const clawMachine = setup({
       }
     }),
     "dropHandler": fromPromise<void, ClawMachineContext & { moveHeight: number }>(async ({ input }) => {
-      await zMove(input.motionClient, input.armClient, 240, input.armClientName)
+      await zMove(input.motionClient, input.armClient, input.pickingHeight, input.armClientName)
       await grab(input.boardClient, input.gripperClient)
       await delay(1000)
       await zMove(input.motionClient, input.armClient, input.moveHeight, input.armClientName)
@@ -358,7 +362,7 @@ async function home(motionClient: MotionClient, armClient: ArmClient, armName: s
 
   // home position - where ball should be dropped and each game starts
   let home_pose: SDK.Pose = {
-    x: 390,
+    x: 310,
     y: 10,
     z: moveHeight,
     theta: 0,
@@ -534,6 +538,7 @@ async function main() {
   const gripperClientName = config.attributes.gripper as string
   const motionClientName = config.attributes.motion as string
   const sentryDSN = config.attributes.sentry as string
+  const pickingHeight = (config.attributes.pickingHeight ?? 240) as number
 
   if (sentryDSN) {
     Sentry.init({
@@ -557,6 +562,7 @@ async function main() {
       boardClientName,
       gripperClientName,
       motionClientName,
+      pickingHeight
     }
   })
 
