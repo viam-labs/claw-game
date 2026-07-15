@@ -156,3 +156,7 @@ func (wm *webModule) Close(ctx context.Context) error {
 func (wm *webModule) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
 	return nil, nil
 }
+
+func (wm *webModule) Status(ctx context.Context) (map[string]interface{}, error) {
+	return map[string]interface{}{}, nil
+}
